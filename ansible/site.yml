@@ -252,6 +252,13 @@
         tags: nova,
         when: enable_nova | bool }
 
+- name: Apply role opendaylight
+  hosts: opendaylight
+  roles:
+    - { role: opendaylight,
+        tags: opendaylight,
+        when: enable_opendaylight | bool }
+
 - name: Apply role openvswitch
   hosts:
     - openvswitch

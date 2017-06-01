@@ -110,7 +110,7 @@ neutron_services:
     container_name: "neutron_l3_agent"
     image: "{{ neutron_l3_agent_image_full }}"
     privileged: True
-    enabled: "{{ not enable_neutron_vpnaas | bool }}"
+    enabled: "{{ not enable_neutron_vpnaas | bool or not enable_opendaylight_l3 | bool }}"
     host_in_groups: >-
       {{
       True if orchestration_engine == 'KUBERNETES' else
@@ -236,7 +236,7 @@ openstack_neutron_auth: "{{ openstack_auth }}"
 ####################
 extension_drivers:
   - name: "qos"
-    enabled: "{{ enable_neutron_qos | bool }}"
+    enabled: "{{ enable_neutron_qos | bool or enable_opendaylight_qos | bool }}"
   - name: "port_security"
     enabled: "{{ enable_tacker | bool or enable_designate | bool }}"
   - name: "dns"
@@ -257,10 +257,21 @@ service_plugins:
   - name: "vpnaas"
     enabled: "{{ enable_neutron_vpnaas | bool }}"
   - name: "qos"
-    enabled: "{{ enable_neutron_qos | bool }}"
+    enabled: "{{ enable_neutron_qos | bool or enable_opendaylight_qos | bool}}"
   - name: "router"
-    enabled: true
+    enabled: "{{ not enable_opendaylight | bool }}"
   - name: "sfc"
     enabled: "{{ neutron_plugin_agent == 'sfc' }}"
+  - name: "odl-router"
+    enabled: "{{ enable_opendaylight | bool }}"
 
 neutron_service_plugins: "{{ service_plugins|selectattr('enabled', 'equalto', true)|list }}"
+
+######################
+# Notification Drivers
+######################
+notification_drivers:
+  - name: "odl-qos-v2"
+    enabled: "{{ enable_opendaylight_qos | bool }}"
+
+neutron_notification_drivers: "{{ notification_drivers|selectattr('enabled', 'equalto', true)|list }}"

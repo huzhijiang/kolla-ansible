@@ -121,7 +121,7 @@ bifrost_network_interface: "{{ network_interface }}"
 dns_interface: "{{ network_interface }}"
 tunnel_interface_address: "{{ hostvars[inventory_hostname]['ansible_' + tunnel_interface]['ipv4']['address'] }}"
 
-# Valid options are [ openvswitch, linuxbridge, sfc ]
+# Valid options are [ openvswitch, linuxbridge, sfc, opendaylight ]
 neutron_plugin_agent: "openvswitch"
 
 # The default ports used by each service.
@@ -248,6 +248,13 @@ fluentd_syslog_port: "5140"
 
 ovsdb_port: "6640"
 
+opendaylight_clustering_port: "2550"
+opendaylight_restconf_port: "8087"
+opendaylight_restconf_port_backup: "8181"
+opendaylight_karaf_ssh_port: "8101"
+opendaylight_openflow_port: "6653"
+opendaylight_ovsdb_port: "6641"
+
 public_protocol: "{{ 'https' if kolla_enable_tls_external | bool else 'http' }}"
 internal_protocol: "http"
 admin_protocol: "http"
@@ -349,6 +356,7 @@ enable_neutron_qos: "no"
 enable_neutron_agent_ha: "no"
 enable_nova_serialconsole_proxy: "no"
 enable_octavia: "no"
+enable_opendaylight: "no"
 enable_openvswitch: "{{ neutron_plugin_agent != 'linuxbridge' | bool }}"
 enable_panko: "no"
 enable_rally: "no"
@@ -545,3 +553,14 @@ ceph_nova_pool_name: "vms"
 ceph_erasure_profile: "k=4 m=2 ruleset-failure-domain=host"
 ceph_rule: "default host {{ 'indep' if ceph_pool_type == 'erasure' else 'firstn' }}"
 ceph_cache_rule: "cache host firstn"
+
+######################
+# OpenDaylight
+######################
+# Set mechanism driver, valid options are [ opendaylight, opendaylight_v2 ]
+opendaylight_mechanism_driver: "opendaylight_v2"
+enable_opendaylight_l3: "no"
+enable_opendaylight_qos: "no"
+enable_opendaylight_legacy_netvirt_conntrack: "no"
+opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack"
+opendaylight_leader_ip_address:
