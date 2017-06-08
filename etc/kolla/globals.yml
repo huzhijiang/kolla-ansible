@@ -115,6 +115,7 @@ kolla_internal_vip_address: "10.10.10.254"
 #enable_opendaylight_l3: "no"
 #enable_opendaylight_qos: "no"
 #enable_opendaylight_legacy_netvirt_conntrack: "no"
+#opendaylight_port_binding_type: "network-topology"
 #opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack"
 #opendaylight_leader_ip_address:
 #opendaylight_restconf_port: "8087"

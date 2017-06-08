@@ -24,9 +24,9 @@ extension_drivers = {{ neutron_extension_drivers|map(attribute='name')|join(',')
 {% if enable_opendaylight | bool %}
 [ml2_odl]
 url = {{ internal_protocol }}://{{ opendaylight_leader_ip_address }}:{{ opendaylight_restconf_port }}/controller/nb/v2/neutron
-username=admin
-password={{ opendaylight_password }}
-port_binding_controller=network-topology
+username = admin
+password = {{ opendaylight_password }}
+port_binding_controller = {{ opendaylight_port_binding_type }}
 {% endif %}
 
 [ml2_type_vlan]

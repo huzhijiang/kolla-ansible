@@ -110,7 +110,7 @@ neutron_services:
     container_name: "neutron_l3_agent"
     image: "{{ neutron_l3_agent_image_full }}"
     privileged: True
-    enabled: "{{ not enable_neutron_vpnaas | bool or not enable_opendaylight_l3 | bool }}"
+    enabled: "{{ not enable_neutron_vpnaas | bool and not enable_opendaylight_l3 | bool }}"
     host_in_groups: >-
       {{
       True if orchestration_engine == 'KUBERNETES' else
