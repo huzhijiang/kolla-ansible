@@ -262,7 +262,7 @@ service_plugins:
     enabled: "{{ not enable_opendaylight | bool }}"
   - name: "sfc"
     enabled: "{{ neutron_plugin_agent == 'sfc' }}"
-  - name: "odl-router"
+  - name: "odl-router_v2"
     enabled: "{{ enable_opendaylight | bool }}"
 
 neutron_service_plugins: "{{ service_plugins|selectattr('enabled', 'equalto', true)|list }}"
