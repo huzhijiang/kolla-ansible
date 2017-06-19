@@ -15,6 +15,7 @@
     - service.enabled | bool
     - service.host_in_groups | bool
     - opendaylight_config_json | changed
+      or opendaylight_config_start_odl | changed
       or opendaylight_config_custom_props | changed
       or opendaylight_config_jetty | changed
       or opendaylight_config_features | changed
@@ -22,6 +23,7 @@
       or opendaylight_config_tomcat | changed
       or opendaylight_config_logging | changed
       or opendaylight_config_netvirt | changed
+      or opendaylight_config_netvirt_acl | changed
       or opendaylight_config_env | changed
       or opendaylight_config_akka | changed
       or opendaylight_config_modules | changed

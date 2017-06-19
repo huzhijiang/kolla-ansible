@@ -1,6 +1,12 @@
 {
-    "command": "/opt/opendaylight/bin/karaf",
+    "command": "start-odl.sh",
     "config_files": [
+        {
+            "source": "{{ container_config_directory }}/start-odl",
+            "dest": "/usr/local/bin/start-odl",
+            "owner": "odl",
+            "perm": "0655"
+        },
         {
             "source": "{{ container_config_directory }}/org.apache.karaf.features.cfg",
             "dest": "/opt/opendaylight/etc/org.apache.karaf.features.cfg",
@@ -40,6 +46,12 @@
         {
             "source": "{{ container_config_directory }}/netvirt-impl-config_netvirt-impl-config.xml",
             "dest": "/opt/opendaylight/etc/opendaylight/datastore/initial/config/netvirt-impl-config_netvirt-impl-config.xml",
+            "owner": "odl",
+            "perm": "0600"
+        },
+        {
+            "source": "{{ container_config_directory }}/netvirt-aclservice-config.xml",
+            "dest": "/opt/opendaylight/etc/opendaylight/datastore/initial/config/netvirt-aclservice-config.xml",
             "owner": "odl",
             "perm": "0600"
         },

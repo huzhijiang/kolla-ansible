@@ -32,6 +32,12 @@
     src: "{{ role_path }}/templates/custom.properties.j2"
     dest: "{{ node_config_directory }}/opendaylight/custom.properties"
 
+- name: Copying over start-odl
+  register: opendaylight_config_start_odl
+  template:
+    src: "{{ role_path }}/templates/start-odl.j2"
+    dest: "{{ node_config_directory }}/opendaylight/start-odl"
+
 - name: Copying over jetty.xml
   register: opendaylight_config_jetty
   template:
@@ -57,39 +63,46 @@
     - "opendaylight"
 
 - name: Copying over tomcat-server.xml
-  register: opendaylight_config_tomcat
   template:
     src: "{{ role_path }}/templates/tomcat-server.xml.j2"
     dest: "{{ node_config_directory }}/{{ item }}/tomcat-server.xml"
+  register: opendaylight_config_tomcat
   with_items:
     - "opendaylight"
 
 - name: Copying over org.ops4j.pax.logging.cfg.j2
-  register: opendaylight_config_logging
   template:
     src: "{{ role_path }}/templates/org.ops4j.pax.logging.cfg.j2"
     dest: "{{ node_config_directory }}/{{ item }}/org.ops4j.pax.logging.cfg"
+  register: opendaylight_config_logging
   with_items:
     - "opendaylight"
 
 - name: Copying over netvirt-impl-config_netvirt-impl-config.xml
-  register: opendaylight_config_netvirt
   template:
     src: "{{ role_path }}/templates/netvirt-impl-config_netvirt-impl-config.xml.j2"
     dest: "{{ node_config_directory }}/{{ item }}/netvirt-impl-config_netvirt-impl-config.xml"
+  register: opendaylight_config_netvirt
+  with_items:
+    - "opendaylight"
+
+- name: Copying over netvirt-aclservice-config.xml
+  template:
+    src: "{{ role_path }}/templates/netvirt-aclservice-config.xml.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/netvirt-aclservice-config.xml"
+  register: opendaylight_config_netvirt_acl
   with_items:
     - "opendaylight"
 
 - name: Copying over setenv
-  register: opendaylight_config_env
   template:
     src: "{{ role_path }}/templates/setenv.j2"
     dest: "{{ node_config_directory }}/{{ item }}/setenv"
+  register: opendaylight_config_env
   with_items:
     - "opendaylight"
 
 - name: Copying over akka.conf
-  register: opendaylight_config_akka
   template:
     src: "{{ role_path }}/templates/akka.conf.j2"
     dest: "{{ node_config_directory }}/opendaylight/akka.conf"
@@ -97,9 +110,9 @@
     - "{{ node_custom_config }}/opendaylight/akka.conf"
     - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/akka.conf"
     - "akka.conf.j2"
+  register: opendaylight_config_akka
 
 - name: Copying over modules.conf
-  register: opendaylight_config_modules
   template:
     src: "{{ role_path }}/templates/modules.conf.j2"
     dest: "{{ node_config_directory }}/opendaylight/modules.conf"
@@ -107,9 +120,9 @@
     - "{{ node_custom_config }}/opendaylight/modules.conf"
     - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/modules.conf"
     - "modules.conf.j2"
+  register: opendaylight_config_modules
 
 - name: Copying over module-shards.conf
-  register: opendaylight_config_module_shards
   template:
     src: "{{ role_path }}/templates/module-shards.conf.j2"
     dest: "{{ node_config_directory }}/opendaylight/module-shards.conf"
@@ -117,6 +130,7 @@
     - "{{ node_custom_config }}/opendaylight/module-shards.conf"
     - "{{ node_custom_config }}/opendaylight/{{ inventory_hostname }}/module-shards.conf"
     - "module-shards.conf.j2"
+  register: opendaylight_config_module_shards
 
 - name: Check opendaylight containers
   kolla_docker:
