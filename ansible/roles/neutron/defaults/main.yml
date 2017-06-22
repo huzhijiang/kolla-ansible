@@ -110,7 +110,9 @@ neutron_services:
     container_name: "neutron_l3_agent"
     image: "{{ neutron_l3_agent_image_full }}"
     privileged: True
-    enabled: "{{ not enable_neutron_vpnaas | bool and not enable_opendaylight_l3 | bool }}"
+    enabled: "{{ not enable_neutron_vpnaas | bool 
+                 and (not enable_opendaylight | bool
+                      or (enable_opendaylight | bool and not enable_opendaylight_l3 | bool)) }}"
     host_in_groups: >-
       {{
       True if orchestration_engine == 'KUBERNETES' else
@@ -259,7 +261,8 @@ service_plugins:
   - name: "qos"
     enabled: "{{ enable_neutron_qos | bool or enable_opendaylight_qos | bool}}"
   - name: "router"
-    enabled: "{{ not enable_opendaylight_l3 | bool }}"
+    enabled: "{{ not enable_opendaylight | bool
+                 or (enable_opendaylight | bool and not enable_opendaylight_l3 | bool) }}"
   - name: "sfc"
     enabled: "{{ neutron_plugin_agent == 'sfc' }}"
   - name: "{{ opendaylight_l3_service_plugin }}"
