@@ -103,8 +103,8 @@ network
 compute
 manila-share
 
-[opendaylight:children]
-network
+[opendaylight]
+opendaylight01
 
 [cinder:children]
 control
