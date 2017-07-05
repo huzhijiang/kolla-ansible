@@ -105,7 +105,7 @@ docker_common_options:
 ####################
 # Arbitrary unique number from 0..255
 keepalived_virtual_router_id: "51"
-
+keepalived_interface: "{{ network_interface }}"
 
 ####################
 # Networking options
