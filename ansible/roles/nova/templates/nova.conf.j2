@@ -101,8 +101,8 @@ auth_url = {{ openstack_auth.auth_url }}/v3
 {% endif %}
 auth_type = password
 project_name = service
-user_domain_name = default
-project_domain_name = default
+user_domain_name = Default
+project_domain_name = Default
 {% if orchestration_engine != 'KUBERNETES' %}
 api_endpoint = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ ironic_api_port }}/v1
 {% else %}
@@ -135,7 +135,7 @@ service_metadata_proxy = true
 
 auth_url = {{ keystone_admin_url }}
 auth_type = password
-project_domain_name = default
+project_domain_name = Default
 user_domain_id = default
 project_name = service
 username = {{ neutron_keystone_user }}
@@ -234,9 +234,9 @@ auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_po
 {% endif %}
 username = {{ placement_keystone_user }}
 password = {{ placement_keystone_password }}
-user_domain_name = default
+user_domain_name = Default
 project_name = service
-project_domain_name = default
+project_domain_name = Default
 os_region_name = {{ openstack_region_name }}
 os_interface = internal
 
