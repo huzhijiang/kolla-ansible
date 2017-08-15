@@ -309,10 +309,9 @@ br-ex name for the neutron_bridge_name or tunnel_interface.
 At present, the tunnel interface ip is configured using network manager on
 on ubuntu and systemd on centos family operating systems. systemd is used
 to work around a limitation of the centos network manager implementation which
-does not consider the creation of an ovs bridge to be a hotplug event. In
-the future, a new config option will be introduced to allow systemd to be used
-on all host distros for those who do not wish to enable the network manager
-service on ubuntu.
+does not consider the creation of an ovs bridge to be a hotplug event.
+This behavior can be controlled by seting dpdk_tunnel_interface_address_mode
+to ``native`` or ``systemd``.
 
 Limitations
 -----------
@@ -328,6 +327,3 @@ the ovs-vswitchd process. This means the lifetime of the dpdk dataplane is
 tied to the lifetime of the ovsdpdk_vswitchd container. As such it is
 recommended to always evacuate all vm workloads from a node running ovs-dpdk
 prior to upgrading.
-
-On ubuntu network manager is required for tunnel networking.
-This requirement will be removed in the future.
