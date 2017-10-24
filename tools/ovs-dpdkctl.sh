@@ -243,7 +243,7 @@ function install_network_manager_conf {
         fi
         [[ "$octet" < 3 ]] && mask+=.
     done
-    if  [[ is_redhat_family == 0 ]]; then
+    if  [[ is_redhat_family == 1 ]]; then
         cat << EOF | tee "/etc/sysconfig/network-scripts/ifcfg-$bridge"
 DEVICE=$bridge
 BOOTPROTO=static
@@ -269,7 +269,7 @@ EOF
 function uninstall_network_manager_conf {
     pair=$(get_value ovs cidr_mappings)
     bridge=`echo $pair | cut -f 1 -d ":"`
-    if  [[ is_redhat_family == 0 ]]; then
+    if  [[ is_redhat_family == 1 ]]; then
         rm -f /etc/sysconfig/network-scripts/ifcfg-$bridge
     else
         rm -f /etc/network/interfaces.d/$bridge.cfg
@@ -357,7 +357,6 @@ function unconfigure_kernel_modules {
 }
 
 function install {
-    configure_kernel_modules
     if [ ! -e "$SERVICE_FILE" ]; then
         install_service
     fi
@@ -368,6 +367,7 @@ function install {
     if [ ! -e "$CONFIG_FILE" ]; then
         gen_config
     fi
+    configure_kernel_modules
     systemctl start ovs-dpdkctl
     install_network_manager_conf
     ip_mode="$(get_value ovs ip_assignment_mode)"
