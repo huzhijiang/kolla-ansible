@@ -51,8 +51,19 @@ if [[ "$enable_swift" == "yes" ]]; then
     sed -i '/\/srv\/node\//d' /etc/fstab
 fi
 
-echo "Getting folders name..."
+if [[ "$glance_file_datadir_volume" != "glance" && -d "$glance_file_datadir_volume" ]]; then
+    echo "Removing glance volume if it is customzied"
+    rm -rfv  $glance_file_datadir_volume
+fi
+
 FOLDER_PATH="/etc/kolla/"
+
+if [[ -e "$FOLDER_PATH/ovsdpdk-db/ovs-dpdkctl.sh" ]]; then
+    echo uninstalling ovs-dpdk service files and tools.
+    sudo CONFIG_FILE="$FOLDER_PATH/ovsdpdk-db/ovs-dpdkctl.conf" $FOLDER_PATH/ovsdpdk-db/ovs-dpdkctl.sh uninstall
+fi
+
+echo "Getting folders name..."
 for dir in $FOLDER_PATH*; do
     if [ "$dir" == "$FOLDER_PATH""passwords.yml" ] || \
        [ "$dir" == "$FOLDER_PATH""globals.yml" ] || \
@@ -63,3 +74,8 @@ for dir in $FOLDER_PATH*; do
         rm -rfv $dir
     fi
 done
+
+if [[ "$destroy_include_dev" == "yes" ]]; then
+    echo "Cleaning up dev repos..."
+    rm -rfv "${kolla_dev_repos_directory}"
+fi

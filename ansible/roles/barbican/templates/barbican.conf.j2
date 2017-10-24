@@ -40,7 +40,7 @@ hmac_label = 'kolla_hmac'
 {% if barbican_crypto_plugin == 'simple_crypto' %}
 [simple_crypto_plugin]
 # the kek should be a 32-byte value which is base64 encoded
-kek = '{{ barbican_crypto_password }}'
+kek = '{{ barbican_crypto_key }}'
 {% endif %}
 
 
@@ -49,9 +49,9 @@ enable = True
 
 [keystone_authtoken]
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
-project_domain_id = default
+project_domain_id = {{ default_project_domain_id }}
 project_name = service
-user_domain_id = default
+user_domain_id = {{ default_user_domain_id }}
 username = {{ barbican_keystone_user }}
 password = {{ barbican_keystone_password }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
@@ -59,11 +59,7 @@ auth_type = password
 
 memcache_security_strategy = ENCRYPT
 memcache_secret_key = {{ memcache_secret_key }}
-{% if orchestration_engine == 'KUBERNETES' %}
-memcache_servers = {{ memcached_servers }}
-{% else %}
 memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
-{% endif %}
 
 [service_credentials]
 auth_url = {{ internal_protocol  }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
@@ -71,6 +67,6 @@ region_name = {{ openstack_region_name }}
 password = {{ barbican_keystone_password }}
 username = {{ barbican_keystone_user }}
 project_name = service
-project_domain_id = default
-user_domain_id = default
+project_domain_id = {{ default_project_domain_id }}
+user_domain_id = {{ default_user_domain_id }}
 auth_type = password

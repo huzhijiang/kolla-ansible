@@ -10,9 +10,9 @@
     - "gnocchi-statsd"
 
 - name: Copying over ceph.conf(s)
+  vars:
+    service_name: "{{ item }}"
   merge_configs:
-    vars:
-      service_name: "{{ item }}"
     sources:
       - "{{ role_path }}/../ceph/templates/ceph.conf.j2"
       - "{{ node_custom_config }}/ceph.conf"
@@ -29,6 +29,8 @@
     pool_name: "{{ gnocchi_pool_name }}"
     pool_type: "{{ gnocchi_pool_type }}"
     cache_mode: "{{ gnocchi_cache_mode }}"
+    pool_pg_num: "{{ gnocchi_pool_pg_num }}"
+    pool_pgp_num: "{{ gnocchi_pool_pgp_num }}"
 
 # TODO(SamYaple): Improve changed_when tests
 - name: Pulling cephx keyring

@@ -20,13 +20,12 @@
   with_dict: "{{ searchlight_services }}"
 
 - name: Copying over searchlight.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/searchlight.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/searchlight.conf"
       - "{{ node_custom_config }}/searchlight/{{ inventory_hostname }}/searchlight.conf"
     dest: "{{ node_config_directory }}/{{ item.key }}/searchlight.conf"
@@ -41,6 +40,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/searchlight/policy.json"
+  run_once: True
   register: searchlight_policy
 
 - name: Copying over existing policy.json

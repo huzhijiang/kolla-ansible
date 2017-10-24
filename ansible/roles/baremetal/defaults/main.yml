@@ -9,6 +9,10 @@ customize_etc_hosts: True
 
 create_kolla_user: True
 
+enable_host_ntp: True
+
+disable_selinux: True
+
 docker_storage_driver: ""
 
 debian_pkg_install:
@@ -28,7 +32,9 @@ ubuntu_pkg_removals:
  - lxd
  - lxc
  - libvirt-bin
+ - open-iscsi
 
 redhat_pkg_removals:
  - libvirt
  - libvirt-daemon
+ - iscsi-initiator-utils

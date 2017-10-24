@@ -19,6 +19,7 @@
     - service.enabled | bool
     - config_json.changed | bool
       or cinder_conf.changed | bool
+      or wsgi_cinder_api.changed | bool
       or policy_json.changed | bool
       or cinder_api_container.changed | bool
 

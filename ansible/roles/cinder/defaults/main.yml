@@ -39,7 +39,7 @@ cinder_services:
   cinder-backup:
     container_name: cinder_backup
     group: cinder-backup
-    enabled: true
+    enabled: "{{ enable_cinder_backup | bool }}"
     image: "{{ cinder_backup_image_full }}"
     privileged: True
     volumes:
@@ -64,9 +64,14 @@ ceph_cinder_backup_cache_mode: "{{ ceph_cache_mode }}"
 cinder_pool_name: "{{ ceph_cinder_pool_name }}"
 cinder_pool_type: "{{ ceph_cinder_pool_type }}"
 cinder_cache_mode: "{{ ceph_cinder_cache_mode }}"
+cinder_pool_pg_num: "{{ ceph_pool_pg_num }}"
+cinder_pool_pgp_num: "{{ ceph_pool_pgp_num }}"
+
 cinder_backup_pool_name: "{{ ceph_cinder_backup_pool_name }}"
 cinder_backup_pool_type: "{{ ceph_cinder_backup_pool_type }}"
 cinder_backup_cache_mode: "{{ ceph_cinder_backup_cache_mode }}"
+cinder_backup_pool_pg_num: "{{ ceph_pool_pg_num }}"
+cinder_backup_pool_pgp_num: "{{ ceph_pool_pgp_num }}"
 
 
 ####################
@@ -80,20 +85,23 @@ cinder_database_address: "{{ kolla_internal_fqdn }}:{{ database_port }}"
 ####################
 # Docker
 ####################
-cinder_volume_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-cinder-volume"
-cinder_volume_tag: "{{ openstack_release }}"
+cinder_install_type: "{{ kolla_install_type }}"
+cinder_tag: "{{ openstack_release }}"
+
+cinder_volume_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ cinder_install_type }}-cinder-volume"
+cinder_volume_tag: "{{ cinder_tag }}"
 cinder_volume_image_full: "{{ cinder_volume_image }}:{{ cinder_volume_tag }}"
 
-cinder_scheduler_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-cinder-scheduler"
-cinder_scheduler_tag: "{{ openstack_release }}"
+cinder_scheduler_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ cinder_install_type }}-cinder-scheduler"
+cinder_scheduler_tag: "{{ cinder_tag }}"
 cinder_scheduler_image_full: "{{ cinder_scheduler_image }}:{{ cinder_scheduler_tag }}"
 
-cinder_backup_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-cinder-backup"
-cinder_backup_tag: "{{ openstack_release }}"
+cinder_backup_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ cinder_install_type }}-cinder-backup"
+cinder_backup_tag: "{{ cinder_tag }}"
 cinder_backup_image_full: "{{ cinder_backup_image }}:{{ cinder_backup_tag }}"
 
-cinder_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-cinder-api"
-cinder_api_tag: "{{ openstack_release }}"
+cinder_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ cinder_install_type }}-cinder-api"
+cinder_api_tag: "{{ cinder_tag }}"
 cinder_api_image_full: "{{ cinder_api_image }}:{{ cinder_api_tag }}"
 
 
@@ -131,6 +139,10 @@ cinder_backends:
     enabled: "{{ enable_cinder_backend_hnas_iscsi | bool }}"
   - name: "hnas-nfs"
     enabled: "{{ enable_cinder_backend_hnas_nfs | bool }}"
+  - name: "vmwarevc-vmdk"
+    enabled: "{{ cinder_backend_vmwarevc_vmdk | bool }}"
+  - name: "zfssa-iscsi"
+    enabled: "{{ enable_cinder_backend_zfssa_iscsi | bool }}"
 
 cinder_enabled_backends: "{{ cinder_backends|selectattr('enabled', 'equalto', true)|list }}"
 cinder_iscsi_helper: "tgtadm"
@@ -154,3 +166,16 @@ hnas_nfs_password:
 hnas_nfs_mgmt_ip0:
 hnas_nfs_svc0_volume_type:
 hnas_nfs_svc0_hdp:
+
+#############################################
+# Oracle ZFS Storage Appliance iSCSI driver
+#############################################
+zfssa_iscsi_backend: "zfssa_iscsi_backend"
+zfssa_iscsi_san_ip:
+zfssa_iscsi_login:
+zfssa_iscsi_password:
+zfssa_iscsi_pool:
+zfssa_iscsi_project:
+zfssa_iscsi_initiator_group:
+zfssa_iscsi_target_portal:
+zfssa_iscsi_target_interfaces:

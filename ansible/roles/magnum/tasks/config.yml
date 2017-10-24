@@ -23,14 +23,12 @@
     - Restart magnum-conductor container
 
 - name: Copying over magnum.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/magnum.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/magnum.conf"
       - "{{ node_custom_config }}/magnum/{{ item.key }}.conf"
       - "{{ node_custom_config }}/magnum/{{ inventory_hostname }}/magnum.conf"
@@ -46,6 +44,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/magnum/policy.json"
+  run_once: True
   register: magnum_policy
 
 - name: Copying over existing policy.json
@@ -69,6 +68,7 @@
     name: "{{ item.value.container_name }}"
     image: "{{ item.value.image }}"
     volumes: "{{ item.value.volumes }}"
+    environment: "{{ item.value.environment }}"
   register: check_magnum_containers
   when:
     - action != "config"

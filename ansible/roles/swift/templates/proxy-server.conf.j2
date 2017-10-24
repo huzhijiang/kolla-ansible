@@ -2,10 +2,10 @@
 bind_ip = {{ api_interface_address }}
 bind_port = {{ swift_proxy_server_port }}
 
-log_udp_host = {{ api_interface_address }}
-log_udp_port = {{ fluentd_syslog_port }}
+log_udp_host = {{ syslog_server }}
+log_udp_port = {{ syslog_udp_port }}
 log_name = {{ service_name }}
-log_facility = LOG_LOCAL0
+log_facility = {{ syslog_swift_facility }}
 log_level = INFO
 workers = {{ openstack_service_workers }}
 
@@ -35,8 +35,8 @@ paste.filter_factory = keystonemiddleware.auth_token:filter_factory
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
 auth_type = password
-project_domain_id = default
-user_domain_id = default
+project_domain_id = {{ default_project_domain_id }}
+user_domain_id = {{ default_user_domain_id }}
 project_name = service
 username = {{ swift_keystone_user }}
 password = {{ swift_keystone_password }}
@@ -48,13 +48,14 @@ memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansi
 
 [filter:keystoneauth]
 use = egg:swift#keystoneauth
-operator_roles = admin,{{ keystone_default_user_role }}{% if enable_ceilometer | bool %},ResellerAdmin{% endif %}
+operator_roles = admin,{{ keystone_default_user_role }},ResellerAdmin
 
 {% if enable_ceilometer | bool %}
 [filter:ceilometer]
 paste.filter_factory = ceilometermiddleware.swift:filter_factory
 control_exchange = swift
 url = rabbit://{% for host in groups['rabbitmq'] %}{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ rabbitmq_port }}{% if not loop.last %},{% endif %}{% endfor %}
+
 driver = messagingv2
 topic = notifications
 log_level = WARN

@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/kolla-ansible.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/tc/badges/kolla-ansible.svg
+    :target: https://governance.openstack.org/tc/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -32,54 +32,52 @@ Getting Started
 ===============
 
 Learn about Kolla-Ansible by reading the documentation online
-`docs.openstack.org <http://docs.openstack.org/developer/kolla-ansible/>`__.
+`docs.openstack.org <https://docs.openstack.org/kolla-ansible/latest/>`__.
 
 Get started by reading the `Developer
-Quickstart <http://docs.openstack.org/developer/kolla-ansible/quickstart.html>`__.
+Quickstart <https://docs.openstack.org/kolla-ansible/latest/user/quickstart.html>`__.
 
 OpenStack services
 ------------------
 
 Kolla-Ansible deploys containers for the following OpenStack projects:
 
-- `Aodh <http://docs.openstack.org/developer/aodh/>`__
-- `Barbican <http://docs.openstack.org/developer/barbican/>`__
-- `Bifrost <http://docs.openstack.org/developer/bifrost/>`__
-- `Ceilometer <http://docs.openstack.org/developer/ceilometer/>`__
-- `Cinder <http://docs.openstack.org/developer/cinder/>`__
-- `CloudKitty <http://docs.openstack.org/developer/cloudkitty/>`__
-- `Congress <http://docs.openstack.org/developer/congress/>`__
-- `Designate <http://docs.openstack.org/developer/designate/>`__
+- `Aodh <https://docs.openstack.org/aodh/latest/>`__
+- `Barbican <https://docs.openstack.org/barbican/latest/>`__
+- `Bifrost <https://docs.openstack.org/bifrost/latest/>`__
+- `Ceilometer <https://docs.openstack.org/ceilometer/latest/>`__
+- `Cinder <https://docs.openstack.org/cinder/latest/>`__
+- `CloudKitty <https://docs.openstack.org/cloudkitty/latest/>`__
+- `Congress <https://docs.openstack.org/congress/latest/>`__
+- `Designate <https://docs.openstack.org/designate/latest/>`__
 - `Freezer <https://wiki.openstack.org/wiki/Freezer-docs>`__
-- `Glance <http://docs.openstack.org/developer/glance/>`__
-- `Gnocchi <http://docs.openstack.org/developer/gnocchi/>`__
-- `Heat <http://docs.openstack.org/developer/heat/>`__
-- `Horizon <http://docs.openstack.org/developer/horizon/>`__
-- `Ironic <http://docs.openstack.org/developer/ironic/>`__
-- `Karbor <http://docs.openstack.org/developer/karbor/>`__
-- `Keystone <http://docs.openstack.org/developer/keystone/>`__
-- `Kuryr <http://docs.openstack.org/developer/kuryr/>`__
-- `Magnum <http://docs.openstack.org/developer/magnum/>`__
-- `Manila <http://docs.openstack.org/developer/manila/>`__
-- `Mistral <http://docs.openstack.org/developer/mistral/>`__
-- `Murano <http://docs.openstack.org/developer/murano/>`__
-- `Neutron <http://docs.openstack.org/developer/neutron/>`__
-- `Nova <http://docs.openstack.org/developer/nova/>`__
-- `Octavia <http://docs.openstack.org/developer/octavia/>`__
-- `Panko <http://docs.openstack.org/developer/panko/>`__
-- `Rally <http://docs.openstack.org/developer/rally/>`__
-- `Sahara <http://docs.openstack.org/developer/sahara/>`__
-- `Searchlight <http://docs.openstack.org/developer/searchlight/>`__
-- `Senlin <http://docs.openstack.org/developer/senlin/>`__
-- `Solum <http://docs.openstack.org/developer/solum/>`__
-- `Swift <http://docs.openstack.org/developer/swift/>`__
-- `Tacker <http://docs.openstack.org/developer/tacker/>`__
-- `Tempest <http://docs.openstack.org/developer/tempest/>`__
-- `Trove <http://docs.openstack.org/developer/trove/>`__
-- `Vmtp <http://vmtp.readthedocs.io/en/latest/>`__
-- `Watcher <http://docs.openstack.org/developer/watcher/>`__
-- `Zaqar <http://docs.openstack.org/developer/zaqar/>`__
-- `Zun <http://wiki.openstack.org/wiki/zun>`__
+- `Glance <https://docs.openstack.org/glance/latest/>`__
+- `Heat <https://docs.openstack.org/heat/latest/>`__
+- `Horizon <https://docs.openstack.org/horizon/latest/>`__
+- `Ironic <https://docs.openstack.org/ironic/latest/>`__
+- `Karbor <https://docs.openstack.org/karbor/latest/>`__
+- `Keystone <https://docs.openstack.org/keystone/latest/>`__
+- `Kuryr <https://docs.openstack.org/kuryr/latest/>`__
+- `Magnum <https://docs.openstack.org/magnum/latest/>`__
+- `Manila <https://docs.openstack.org/manila/latest/>`__
+- `Mistral <https://docs.openstack.org/mistral/latest/>`__
+- `Murano <https://docs.openstack.org/murano/latest/>`__
+- `Neutron <https://docs.openstack.org/neutron/latest/>`__
+- `Nova <https://docs.openstack.org/nova/latest/>`__
+- `Octavia <https://docs.openstack.org/octavia/latest/>`__
+- `Panko <https://docs.openstack.org/panko/latest/>`__
+- `Rally <https://docs.openstack.org/rally/latest/>`__
+- `Sahara <https://docs.openstack.org/sahara/latest/>`__
+- `Searchlight <https://docs.openstack.org/searchlight/latest/>`__
+- `Senlin <https://docs.openstack.org/senlin/latest/>`__
+- `Solum <https://docs.openstack.org/solum/latest/>`__
+- `Swift <https://docs.openstack.org/swift/latest/>`__
+- `Tacker <https://docs.openstack.org/tacker/latest/>`__
+- `Tempest <https://docs.openstack.org/tempest/latest/>`__
+- `Trove <https://docs.openstack.org/trove/latest/>`__
+- `Vmtp <https://vmtp.readthedocs.io/en/latest/>`__
+- `Watcher <https://docs.openstack.org/watcher/latest/>`__
+- `Zun <https://docs.openstack.org/zun/latest/>`__
 
 Infrastructure components
 -------------------------
@@ -97,11 +95,10 @@ Kolla-Ansible deploys containers for the following infrastructure components:
 - `Etcd <https://coreos.com/etcd/>`__ a distributed reliable key-value store.
 - `Fluentd <https://www.fluentd.org/>`__ as an open source data collector
   for unified logging layer.
+- `Gnocchi <http://gnocchi.xyz/>`__ A time-series storage database.
 - `HAProxy <http://www.haproxy.org/>`__ and
   `Keepalived <http://www.keepalived.org/>`__ for high availability of services
   and their endpoints.
-- `Kafka <http://kafka.apache.org/documentation/>`__ A distributed streaming
-  platform.
 - `MariaDB and Galera Cluster <https://mariadb.com/kb/en/mariadb/galera-cluster/>`__
   for highly available MySQL databases.
 - `Memcached <https://memcached.org/>`__ a distributed memory object caching system.
@@ -110,14 +107,15 @@ Kolla-Ansible deploys containers for the following infrastructure components:
 - `Open vSwitch <http://openvswitch.org/>`__ and Linuxbridge backends for Neutron.
 - `RabbitMQ <https://www.rabbitmq.com/>`__ as a messaging backend for
   communication between services.
+- `Redis <https://redis.io/>`__ an in-memory data structure store.
 
 Directories
 ===========
 
 -  ``ansible`` - Contains Ansible playbooks to deploy OpenStack services and
    infrastructure components in Docker containers.
--  ``contrib`` - Contains demos scenarios for Heat and Murano and a development
-   environment for Vagrant
+-  ``contrib`` - Contains demos scenarios for Heat, Magnum and Tacker and a
+   development environment for Vagrant
 -  ``doc`` - Contains documentation.
 -  ``etc`` - Contains a reference etc directory structure which requires
    configuration of a small number of configuration variables to achieve
@@ -132,7 +130,7 @@ Getting Involved
 
 Need a feature? Find a bug? Let us know! Contributions are much
 appreciated and should follow the standard `Gerrit
-workflow <http://docs.openstack.org/infra/manual/developers.html>`__.
+workflow <https://docs.openstack.org/infra/manual/developers.html>`__.
 
 -  We communicate using the #openstack-kolla irc channel.
 -  File bugs, blueprints, track releases, etc on

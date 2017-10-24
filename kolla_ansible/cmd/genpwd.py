@@ -19,7 +19,9 @@ import random
 import string
 import sys
 
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 from hashlib import md5
 from hashlib import sha256
 from oslo_utils import uuidutils
@@ -35,9 +37,20 @@ if PROJECT_ROOT not in sys.path:
 
 
 def generate_RSA(bits=4096):
-    new_key = RSA.generate(bits, os.urandom)
-    private_key = new_key.exportKey("PEM")
-    public_key = new_key.publickey().exportKey("OpenSSH")
+    new_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=bits,
+        backend=default_backend()
+    )
+    private_key = new_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    public_key = new_key.public_key().public_bytes(
+        encoding=serialization.Encoding.OpenSSH,
+        format=serialization.PublicFormat.OpenSSH
+    )
     return private_key, public_key
 
 
@@ -46,7 +59,7 @@ def main():
     parser.add_argument(
         '-p', '--passwords', type=str,
         default=os.path.abspath('/etc/kolla/passwords.yml'),
-        help=('Path to the passwords yml file'))
+        help=('Path to the passwords.yml file'))
 
     args = parser.parse_args()
     passwords_file = os.path.expanduser(args.passwords)
@@ -69,7 +82,8 @@ def main():
     blank_keys = ['docker_registry_password']
 
     # HMAC-MD5 keys
-    hmac_md5_keys = ['designate_rndc_key']
+    hmac_md5_keys = ['designate_rndc_key',
+                     'osprofiler_secret']
 
     # HMAC-SHA256 keys
     hmac_sha256_keys = ['barbican_crypto_key']

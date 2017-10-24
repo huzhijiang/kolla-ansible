@@ -12,12 +12,15 @@ murano_database_address: "{{ kolla_internal_fqdn }}:{{ database_port }}"
 ####################
 # Docker
 ####################
-murano_engine_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-murano-engine"
-murano_engine_tag: "{{ openstack_release }}"
+murano_install_type: "{{ kolla_install_type }}"
+murano_tag: "{{ openstack_release }}"
+
+murano_engine_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ murano_install_type }}-murano-engine"
+murano_engine_tag: "{{ murano_tag }}"
 murano_engine_image_full: "{{ murano_engine_image }}:{{ murano_engine_tag }}"
 
-murano_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-murano-api"
-murano_api_tag: "{{ openstack_release }}"
+murano_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ murano_install_type }}-murano-api"
+murano_api_tag: "{{ murano_tag }}"
 murano_api_image_full: "{{ murano_api_image }}:{{ murano_api_tag }}"
 
 
@@ -33,3 +36,11 @@ murano_logging_debug: "{{ openstack_logging_debug }}"
 murano_keystone_user: "murano"
 
 openstack_murano_auth: "{{ openstack_auth }}"
+
+
+####################
+# Kolla
+####################
+murano_git_repository: "{{ kolla_dev_repos_git }}/{{ project_name }}"
+murano_dev_repos_pull: "{{ kolla_dev_repos_pull }}"
+murano_dev_mode: "{{ kolla_dev_mode }}"

@@ -9,6 +9,7 @@
 VM=$1
 MODE=$2
 KOLLA_PATH=$3
+KOLLA_ANSIBLE_PATH=$4
 
 export http_proxy=
 export https_proxy=
@@ -54,20 +55,24 @@ function is_centos {
 
 # Install common packages and do some prepwork.
 function prep_work {
-    if [[ "$(systemctl is-enabled firewalld)" == "enabled" ]]; then
-        systemctl stop firewalld
-        systemctl disable firewalld
-    fi
 
     # This removes the fqdn from /etc/hosts's 127.0.0.1. This name.local will
     # resolve to the public IP instead of localhost.
     sed -i -r "s,^127\.0\.0\.1\s+.*,127\.0\.0\.1   localhost localhost.localdomain localhost4 localhost4.localdomain4," /etc/hosts
 
     if is_centos; then
+        if [[ "$(systemctl is-enabled firewalld)" == "enabled" ]]; then
+            systemctl stop firewalld
+            systemctl disable firewalld
+        fi
         yum -y install epel-release
         rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
         yum -y install MySQL-python vim-enhanced python-pip python-devel gcc openssl-devel libffi-devel libxml2-devel libxslt-devel
     elif is_ubuntu; then
+        if [[ "$(systemctl is-enabled ufw)" == "enabled" ]]; then
+            systemctl stop ufw
+            systemctl disable ufw
+        fi
         apt-get update
         apt-get -y install python-mysqldb python-pip python-dev build-essential libssl-dev libffi-dev libxml2-dev libxslt-dev
     else
@@ -75,7 +80,7 @@ function prep_work {
         exit 1
     fi
 
-    pip install --upgrade docker-py
+    pip install --upgrade docker
 }
 
 # Do some cleanup after the installation of kolla
@@ -114,10 +119,10 @@ EOF
         usermod -aG docker vagrant
     elif is_ubuntu; then
         apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-        echo "deb https://apt.dockerproject.org/repo ubuntu-wily main" > /etc/apt/sources.list.d/docker.list
+        echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" > /etc/apt/sources.list.d/docker.list
         apt-get update
         apt-get -y install docker-engine
-        sed -i -r "s,(ExecStart)=(.+),\1=/usr/bin/docker daemon --insecure-registry ${REGISTRY} --registry-mirror=http://${REGISTRY}|" /lib/systemd/system/docker.service
+        sed -i -r "s|(ExecStart)=(.+)|\1=/usr/bin/docker daemon --insecure-registry ${REGISTRY} --registry-mirror=http://${REGISTRY}|" /lib/systemd/system/docker.service
     else
         echo "Unsupported Distro: $DISTRO" 1>&2
         exit 1
@@ -168,6 +173,7 @@ function configure_operator {
 
     pip install --upgrade "ansible>=2" python-openstackclient python-neutronclient tox
 
+    pip install ${KOLLA_ANSIBLE_PATH}
     pip install ${KOLLA_PATH}
 
     # Set selinux to permissive
@@ -177,8 +183,9 @@ function configure_operator {
     fi
 
     tox -c ${KOLLA_PATH}/tox.ini -e genconfig
-    cp -r ${KOLLA_PATH}/etc/kolla/ /etc/kolla
-    ${KOLLA_PATH}/tools/generate_passwords.py
+    cp -r ${KOLLA_ANSIBLE_PATH}/etc/kolla/ /etc/kolla
+    cp -r ${KOLLA_PATH}/etc/kolla/* /etc/kolla
+    ${KOLLA_ANSIBLE_PATH}/tools/generate_passwords.py
     mkdir -p /usr/share/kolla
     chown -R vagrant: /etc/kolla /usr/share/kolla
 

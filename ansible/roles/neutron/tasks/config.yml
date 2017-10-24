@@ -52,8 +52,6 @@
     sources:
       - "{{ role_path }}/templates/neutron.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/neutron.conf"
       - "{{ node_custom_config }}/neutron/{{ item.key }}.conf"
       - "{{ node_custom_config }}/neutron/{{ inventory_hostname }}/neutron.conf"
@@ -90,20 +88,24 @@
 
 - name: Copying over neutron_vpnaas.conf
   vars:
-    service_name: "neutron-server"
-    neutron_server: "{{ neutron_services[service_name] }}"
+    service_name: "{{ item.key }}"
+    services_need_neutron_vpnaas_conf:
+      - "neutron-server"
+      - "neutron-vpnaas-agent"
   merge_configs:
     sources:
       - "{{ role_path }}/templates/neutron_vpnaas.conf.j2"
       - "{{ node_custom_config }}/neutron/neutron_vpnaas.conf"
       - "{{ node_custom_config }}/neutron/{{ inventory_hostname }}/neutron_vpnaas.conf"
-    dest: "{{ node_config_directory }}/{{ service_name }}/neutron_vpnaas.conf"
-  register: neutron_vpnaas_conf
+    dest: "{{ node_config_directory }}/{{ item.key }}/neutron_vpnaas.conf"
+  register: neutron_vpnaas_confs
   when:
-    - neutron_server.enabled | bool
-    - neutron_server.host_in_groups | bool
+    - item.value.enabled | bool
+    - item.value.host_in_groups | bool
+    - item.key in services_need_neutron_vpnaas_conf
+  with_dict: "{{ neutron_services }}"
   notify:
-    - "Restart {{ service_name }} container"
+    - "Restart {{ item.key }} container"
 
 - name: Copying over ml2_conf.ini
   vars:
@@ -183,6 +185,7 @@
   vars:
     service_name: "{{ item.key }}"
     services_need_fwaas_driver_ini:
+      - "neutron-server"
       - "neutron-l3-agent"
       - "neutron-vpnaas-agent"
   merge_configs:
@@ -265,7 +268,26 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/neutron/policy.json"
+  run_once: True
   register: neutron_policy
+
+- name: Copying over nsx.ini
+  vars:
+    service_name: "neutron-server"
+    neutron_server: "{{ neutron_services[service_name] }}"
+  merge_configs:
+    sources:
+      - "{{ role_path }}/templates/nsx.ini.j2"
+      - "{{ node_custom_config }}/neutron/nsx.ini"
+      - "{{ node_custom_config }}/neutron/{{ inventory_hostname }}/nsx.ini"
+    dest: "{{ node_config_directory }}/{{ service_name }}/nsx.ini"
+  register: nsx_ini
+  when:
+    - neutron_server.enabled | bool
+    - neutron_server.host_in_groups | bool
+    - neutron_plugin_agent in ['vmware_nsxv', 'vmware_dvs']
+  notify:
+    - "Restart {{ service_name }} container"
 
 - name: Copying over existing policy.json
   vars:
@@ -285,12 +307,40 @@
     dest: "{{ node_config_directory }}/{{ service_name }}/policy.json"
   register: policy_jsons
   when:
-    - neutron_policy.stat.exists | bool
+    - neutron_policy.stat.exists
     - item.value.enabled | bool
     - item.value.host_in_groups | bool
   with_dict: "{{ neutron_services }}"
   notify:
     - "Restart {{ item.key }} container"
+
+- name: Copy neutron-l3-agent-wrapper script
+  vars:
+    service_name: "neutron-l3-agent"
+    service: "{{ neutron_services[service_name] }}"
+  template:
+    src: neutron-l3-agent-wrapper.sh.j2
+    dest: "{{ node_config_directory }}/{{ service_name }}/neutron-l3-agent-wrapper.sh"
+  register: neutron_l3_agent_wrapper
+  when:
+    - service.enabled | bool
+    - service.host_in_groups | bool
+  notify:
+    - "Restart {{ service_name }} container"
+
+- name: Copy neutron-vpnaas-agent-wrapper script
+  vars:
+    service_name: "neutron-vpnaas-agent"
+    service: "{{ neutron_services[service_name] }}"
+  template:
+    src: neutron-vpnaas-agent-wrapper.sh.j2
+    dest: "{{ node_config_directory }}/{{ service_name }}/neutron-vpnaas-agent-wrapper.sh"
+  register: neutron_vpnaas_agent_wrapper
+  when:
+    - service.enabled | bool
+    - service.host_in_groups | bool
+  notify:
+    - "Restart {{ service_name }} container"
 
 # TODO check the environment change
 - name: Check neutron containers

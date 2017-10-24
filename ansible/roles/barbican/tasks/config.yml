@@ -37,31 +37,36 @@
   notify:
     - Restart barbican-api container
 
+- name: Checking whether barbican-api-paste.ini file exists
+  vars:
+    service: "{{ barbican_services['barbican-api'] }}"
+  local_action: stat path="{{ node_custom_config }}/barbican/barbican-api-paste.ini"
+  run_once: True
+  register: check_barbican_api_paste_ini
+  when:
+    - service.enabled | bool
+
 - name: Copying over barbican-api-paste.ini
   vars:
     service: "{{ barbican_services['barbican-api'] }}"
-  merge_configs:
-    sources:
-      - "{{ role_path }}/templates/barbican-api-paste.ini.j2"
-      - "{{ node_custom_config }}/barbican-api/barbican-api-paste.ini"
-      - "{{ node_custom_config }}/barbican-api/{{ inventory_hostname }}/barbican-api-paste.ini"
+  template:
+    src: "{{ node_custom_config }}/barbican/barbican-api-paste.ini"
     dest: "{{ node_config_directory }}/barbican-api/barbican-api-paste.ini"
   when:
     - inventory_hostname in groups['barbican-api']
     - service.enabled | bool
+    - check_barbican_api_paste_ini.stat.exists
   register: barbican_api_paste
   notify:
     - Restart barbican-api container
 
 - name: Copying over barbican.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/barbican.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/barbican.conf"
       - "{{ node_custom_config }}/barbican/{{ item.key }}.conf"
       - "{{ node_custom_config }}/barbican/{{ inventory_hostname }}/barbican.conf"
@@ -76,6 +81,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/barbican/policy.json"
+  run_once: True
   register: barbican_policy
 
 - name: Copying over existing policy.json

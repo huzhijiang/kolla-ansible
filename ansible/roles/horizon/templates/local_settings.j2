@@ -87,7 +87,7 @@ OPENSTACK_API_VERSIONS = {
 # Set this to True if running on a multi-domain model. When this is enabled, it
 # will require the user to enter the Domain name in addition to the username
 # for login.
-#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = False
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = {{ horizon_keystone_multidomain | bool }}
 
 # Overrides the default domain used when running on single-domain model
 # with Keystone V3. All entities will be created in the default domain.
@@ -163,12 +163,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-
-{% if orchestration_engine == 'KUBERNETES' %}
-        'LOCATION': '{{ memcached_servers }}'
-{% else %}
         'LOCATION': [{% for host in groups['memcached'] %}'{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ memcached_port }}'{% if not loop.last %},{% endif %}{% endfor %}]
-{%- endif %}
     }
 }
 {% endif %}
@@ -193,7 +188,7 @@ AVAILABLE_REGIONS = [
 ]
 {% endif %}
 
-OPENSTACK_HOST = "{% if orchestration_engine == 'KUBERNETES' %}{{ api_interface_address }}{% else %}{{ kolla_internal_fqdn }}{% endif %}"
+OPENSTACK_HOST = "{{ kolla_internal_fqdn }}"
 
 OPENSTACK_KEYSTONE_URL = "{{ keystone_internal_url }}"
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "{{ keystone_default_user_role }}"
@@ -292,7 +287,7 @@ OPENSTACK_HYPERVISOR_FEATURES = {
 # The OPENSTACK_CINDER_FEATURES settings can be used to enable optional
 # services provided by cinder that is not exposed by its extension API.
 OPENSTACK_CINDER_FEATURES = {
-    'enable_backup': True,
+    'enable_backup': {{ 'True' if enable_cinder_backup | bool else 'False' }},
 }
 
 # The OPENSTACK_NEUTRON_NETWORK settings can be used to enable optional
@@ -739,7 +734,7 @@ SECURITY_GROUP_RULES = {
 #  $glance --os-image-api-version 2 help md-namespace-import
 #  $glance-manage db_load_metadefs <directory_with_definition_files>
 #
-# See Metadata Definitions on: http://docs.openstack.org/developer/glance/
+# See Metadata Definitions on: https://docs.openstack.org/glance/latest/
 
 # TODO: (david-lyle) remove when plugins support settings natively
 # Note: This is only used when the Sahara plugin is configured and enabled

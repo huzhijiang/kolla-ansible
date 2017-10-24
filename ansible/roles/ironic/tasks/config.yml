@@ -23,14 +23,12 @@
     - "ironic-dnsmasq"
 
 - name: Copying over ironic.conf
+  vars:
+    service_name: "{{ item }}"
   merge_configs:
-    vars:
-      service_name: "{{ item }}"
     sources:
       - "{{ role_path }}/templates/ironic.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/ironic.conf"
       - "{{ node_custom_config }}/ironic/{{ item }}.conf"
       - "{{ node_custom_config }}/ironic/{{ inventory_hostname }}/ironic.conf"
@@ -40,18 +38,17 @@
     - "ironic-conductor"
 
 - name: Copying over inspector.conf
+  vars:
+    service_name: "ironic-inspector"
   merge_configs:
-    vars:
-      service_name: "ironic-inspector"
     sources:
       - "{{ role_path }}/templates/ironic-inspector.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/ironic-inspector.conf"
       - "{{ node_custom_config }}/ironic-inspector/inspector.conf"
       - "{{ node_custom_config }}/ironic-inspector/{{ inventory_hostname }}/inspector.conf"
     dest: "{{ node_config_directory }}/ironic-inspector/inspector.conf"
+  when: inventory_hostname in groups['ironic-inspector']
 
 - name: Copying over dnsmasq.conf
   template:
@@ -71,6 +68,10 @@
     - "{{ node_custom_config }}/ironic/pxelinux.default"
     - "{{ node_custom_config }}/ironic/{{ inventory_hostname }}/pxelinux.default"
     - "pxelinux.default.j2"
+  when:
+    # Only required when Ironic inspector is in use.
+    - groups['ironic-inspector'] | length > 0
+    - inventory_hostname in groups['ironic-pxe']
 
 - name: Copying ironic-agent kernel and initramfs
   copy:
@@ -79,10 +80,14 @@
   with_items:
     - "ironic-agent.kernel"
     - "ironic-agent.initramfs"
-  when: orchestration_engine != 'KUBERNETES'
+  when:
+    # Only required when Ironic inspector is in use.
+    - groups['ironic-inspector'] | length > 0
+    - inventory_hostname in groups['ironic-pxe']
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/ironic/policy.json"
+  run_once: True
   register: ironic_policy
 
 - name: Copying over existing policy.json

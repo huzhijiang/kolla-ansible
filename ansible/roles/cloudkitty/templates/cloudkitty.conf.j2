@@ -3,6 +3,11 @@ debug = {{ cloudkitty_logging_debug }}
 
 log_dir = /var/log/kolla/cloudkitty
 
+{% if service_name == 'cloudkitty-api' %}
+# Force cloudkitty-api.log or will use app.wsgi
+log_file = /var/log/kolla/cloudkitty/cloudkitty-api.log
+{% endif %}
+
 transport_url = rabbit://{% for host in groups['rabbitmq'] %}{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ rabbitmq_port }}{% if not loop.last %},{% endif %}{% endfor %}
 
 [database]
@@ -13,8 +18,8 @@ max_retries = -1
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
 auth_type = password
-project_domain_id = default
-user_domain_id = default
+project_domain_id = {{ default_project_domain_id }}
+user_domain_id = {{ default_user_domain_id }}
 project_name = service
 username = {{ cloudkitty_keystone_user }}
 password = {{ cloudkitty_keystone_password }}
@@ -29,10 +34,6 @@ lock_path = /var/lib/cloudkitty/tmp
 [collect]
 collector = {{ cloudkitty_collector_backend }}
 services = compute,image{% if enable_cinder | bool %},volume{% endif %},network.bw.out,network.bw.in,network.floating
-
-[oslo_messaging_notifications]
-driver = messagingv2
-topics = notifications
 
 [keystone_fetcher]
 keystone_version = 3

@@ -11,12 +11,8 @@ default_pool_id = {{ designate_pool_id }}
 workers = {{ openstack_service_workers }}
 
 [service:api]
+listen = {{ api_interface_address }}:{{ designate_api_port }}
 api_base_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ designate_api_port }}
-api_host = {{ api_interface_address }}
-api_port = {{ designate_api_port }}
-enable_api_v1 = True
-enabled_extensions_v1 = 'diagnostics, quotas, reports, sync, touch'
-enable_api_v2 = True
 enabled_extensions_v2 = 'quotas, reports'
 workers = {{ openstack_service_workers }}
 
@@ -24,12 +20,13 @@ workers = {{ openstack_service_workers }}
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
 auth_type = password
-project_domain_id = default
-user_domain_id = default
+project_domain_id = {{ default_project_domain_id }}
+user_domain_id = {{ default_user_domain_id }}
 project_name = service
 username = {{ designate_keystone_user }}
 password = {{ designate_keystone_password }}
 http_connect_timeout = 60
+service_token_roles_required = True
 
 memcache_security_strategy = ENCRYPT
 memcache_secret_key = {{ memcache_secret_key }}
@@ -39,11 +36,15 @@ memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansi
 enabled_notification_handlers = nova_fixed, neutron_floatingip
 workers = {{ openstack_service_workers }}
 
+{% if service_name == 'designate-mdns' %}
 [service:mdns]
 listen = {{ hostvars[inventory_hostname]['ansible_' + dns_interface]['ipv4']['address'] }}:{{ designate_mdns_port }}
 workers = {{ openstack_service_workers }}
+{% endif %}
 
 [service:worker]
+# TODO (egonzalez): Remove enabled option in worker section once https://bugs.launchpad.net/designate/+bug/1676827
+# is fixed. Enabled is deprecated but without explicitly enabling worker service not start
 enabled = True
 notify = True
 workers = {{ openstack_service_workers }}
@@ -91,11 +92,6 @@ formatv6 = '%(hostname)s.%(project)s.%(zone)s'
 [oslo_messaging_notifications]
 topics = notifications_designate
 driver = messagingv2
-
-[oslo_messaging_rabbit]
-rabbit_userid = {{ rabbitmq_user }}
-rabbit_password = {{ rabbitmq_password }}
-rabbit_hosts = {% for host in groups['rabbitmq'] %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ rabbitmq_port }}{% if not loop.last %},{% endif %}{% endfor %}
 
 [oslo_concurrency]
 lock_path = /var/lib/designate/tmp

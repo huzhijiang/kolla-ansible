@@ -11,7 +11,7 @@ function add_key {
             echo "Failed to add Docker keyring"
             exit 1
         fi
-        # hkp://pool.sks-keyservers.net intermittenly doesnt have the correct
+        # hkp://pool.sks-keyservers.net intermittenly doesn't have the correct
         # keyring. p80 is what the docker script pulls from and what we should
         # use for reliability too
         sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D && break || :
@@ -34,6 +34,25 @@ function setup_disk {
         DEV=$(losetup -a | awk -F: '/\/docker/ {print $1}')
     fi
 
+# Excerpts from https://github.com/openstack-infra/devstack-gate/blob/dc49f9e6eb18e42c6b175e4e146fa8f3b7633279/functions.sh#L306
+    if [ -b /dev/xvde ]; then
+        DEV2='/dev/xvde'
+        if mount | grep ${DEV2} > /dev/null; then
+            echo "*** ${DEV2} appears to already be mounted"
+            echo "*** ${DEV2} unmounting and reformating"
+            sudo umount ${DEV2}
+        fi
+        sudo parted ${DEV2} --script -- mklabel msdos
+        sync
+        sudo partprobe
+        sudo mkfs.ext4 ${DEV2}
+        sudo mount ${DEV2} /mnt
+        sudo find /opt/ -mindepth 1 -maxdepth 1 -exec mv {} /mnt/ \;
+        sudo umount /mnt
+        sudo mount ${DEV2} /opt
+        grep -q ${DEV2} /proc/mounts || exit 1
+    fi
+
     # Format Disks and setup Docker to use BTRFS
     sudo parted ${DEV} -s -- mklabel msdos
     sudo rm -rf /var/lib/docker
@@ -51,19 +70,19 @@ function setup_disk {
 # (SamYaple)TODO: Remove the path overriding
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-source /etc/lsb-release
+. /etc/lsb-release
 
 # Setup Docker repo and add signing key
 echo "deb http://apt.dockerproject.org/repo ubuntu-${DISTRIB_CODENAME} main" | sudo tee /etc/apt/sources.list.d/docker.list
 add_key
 sudo apt-get update
-sudo apt-get -y install --no-install-recommends 'docker-engine=1.12.*'
+sudo apt-get -y install --no-install-recommends docker-engine
 
 sudo service docker stop
 if [[ ${DISTRIB_CODENAME} == "trusty" ]]; then
     sudo apt-get -y install --no-install-recommends btrfs-tools
     setup_disk
-    echo "DOCKER_OPTS=\"-s btrfs --insecure-registry $(cat /etc/nodepool/primary_node_private):4000\"" | sudo tee /etc/default/docker
+    echo "DOCKER_OPTS=\"-s btrfs --insecure-registry 0.0.0.0/0\"" | sudo tee /etc/default/docker
     sudo mount --make-shared /run
     sudo service docker start
 else
@@ -71,7 +90,7 @@ else
     sudo tee /etc/systemd/system/docker.service.d/kolla.conf << EOF
 [Service]
 ExecStart=
-ExecStart=/usr/bin/dockerd --storage-driver overlay2 --insecure-registry $(cat /etc/nodepool/primary_node_private):4000
+ExecStart=/usr/bin/dockerd --storage-driver overlay2 --insecure-registry 0.0.0.0/0
 MountFlags=shared
 EOF
     sudo systemctl daemon-reload

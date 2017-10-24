@@ -10,7 +10,7 @@
       name: "{{ tacker_database_name }}"
   register: database
   run_once: True
-  delegate_to: "{{ groups['tacker'][0] }}"
+  delegate_to: "{{ groups['tacker-server'][0] }}"
 
 - name: Creating tacker database user and setting permissions
   kolla_toolbox:
@@ -20,13 +20,13 @@
       login_port: "{{ database_port }}"
       login_user: "{{ database_user }}"
       login_password: "{{ database_password }}"
-      name: "{{ tacker_database_name }}"
+      name: "{{ tacker_database_user }}"
       password: "{{ tacker_database_password }}"
       host: "%"
       priv: "{{ tacker_database_name }}.*:ALL"
       append_privs: "yes"
   run_once: True
-  delegate_to: "{{ groups['tacker'][0] }}"
+  delegate_to: "{{ groups['tacker-server'][0] }}"
 
 - include: bootstrap_service.yml
   when: database.changed

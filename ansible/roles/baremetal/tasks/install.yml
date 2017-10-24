@@ -4,10 +4,14 @@
   become: True
   when: ansible_os_family == 'Debian'
 
+# TODO(inc0): Gates don't seem to have ufw executable, check for it instead of ignore errors
 - name: Set firewall default policy
   become: True
-  ufw: state=disabled policy=allow
+  ufw:
+    state: disabled
+    policy: allow
   when: ansible_os_family == 'Debian'
+  ignore_errors: yes
 
 - name: Check if firewalld is installed
   command: rpm -q firewalld
@@ -28,55 +32,53 @@
     - firewalld_check.rc == 0
 
 - name: Install apt packages
-  package: name={{item}} state=present
+  package:
+    name: "{{ item }}"
+    state: present
   become: True
   with_items: "{{ debian_pkg_install }}"
   when: ansible_os_family == 'Debian'
 
-- name: Install wily kernel
-  package: name=linux-generic-lts-wily state=latest
-  register: kernel_updated
-  become: True
-  when:
-    - ansible_distribution|lower == "ubuntu" | bool
-    - ansible_distribution_release|lower == "trusty" | bool
-
-- name: Set reboot required
-  set_fact:
-    reboot_required: True
-  when:
-    - kernel_updated is defined
-    - kernel_updated.changed
-
 - name: Install deltarpm packages
-  package: name={{item}} state=installed
+  package:
+    name: "{{ item }}"
+    state: installed
   become: True
   with_items:
     - deltarpm
   when: ansible_os_family == 'RedHat'
 
 - name: Install yum packages
-  package: name={{item}} state=present
+  package:
+    name: "{{ item }}"
+    state: present
   become: True
   with_items: "{{ redhat_pkg_install }}"
   when: ansible_os_family == 'RedHat'
 
 - name: Install pip
-  easy_install: name=pip
+  easy_install:
+    name: pip
   become: True
 
-- name: Install docker-py
-  pip: name=docker-py state=latest
+- name: Install docker SDK for python
+  pip:
+    name: docker
+    state: latest
   become: True
 
 - name: Remove packages
-  package: name={{item}} state=absent
+  package:
+    name: "{{ item }}"
+    state: absent
   with_items: "{{ ubuntu_pkg_removals }}"
   become: True
-  when: ansible_distribution|lower == "ubuntu" | bool
+  when: ansible_distribution|lower == "ubuntu"
 
 - name: Remove packages
-  package: name={{item}} state=absent
+  package:
+    name: "{{ item }}"
+    state: absent
   with_items: "{{ redhat_pkg_removals }}"
   become: True
   when: ansible_os_family == 'RedHat'

@@ -23,17 +23,31 @@ max_retries = -1
 
 [heat_client]
 region_name = {{ openstack_region_name }}
+endpoint_type = internalURL
 
 [cinder_client]
 region_name = {{ openstack_region_name }}
 
 [barbican_client]
 region_name = {{ openstack_region_name }}
+endpoint_type = internalURL
+
+[glance_client]
+region_name = {{ openstack_region_name }}
+endpoint_type = internalURL
+
+[neutron_client]
+region_name = {{ openstack_region_name }}
+endpoint_type = internalURL
+
+[nova_client]
+region_name = {{ openstack_region_name }}
+endpoint_type = internalURL
 
 [keystone_auth]
 auth_url = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}/v3
-user_domain_name = Default
-project_domain_name = Default
+user_domain_name = {{ default_user_domain_name }}
+project_domain_name = {{ default_project_domain_name }}
 project_name = service
 password = {{ magnum_keystone_password }}
 username = {{ magnum_keystone_user }}
@@ -44,8 +58,8 @@ auth_version = v3
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}/v3
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
 auth_type = password
-project_domain_name = Default
-user_domain_name = Default
+project_domain_name = {{ default_project_domain_name }}
+user_domain_name = {{ default_user_domain_name }}
 project_name = service
 username = {{ magnum_keystone_user }}
 password = {{ magnum_keystone_password }}
@@ -58,6 +72,7 @@ memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansi
 trustee_domain_admin_password = {{ magnum_keystone_password }}
 trustee_domain_admin_name = {{ magnum_trustee_domain_admin }}
 trustee_domain_name = {{ magnum_trustee_domain }}
+cluster_user_trust = {{ enable_cluster_user_trust }}
 
 [oslo_concurrency]
 lock_path = /var/lib/magnum/tmp
@@ -75,4 +90,14 @@ driver = messaging
 topics = 'notifications'
 {% else %}
 driver = noop
+{% endif %}
+
+{% if enable_osprofiler | bool %}
+[profiler]
+enabled = true
+trace_sqlalchemy = true
+hmac_keys = {{ osprofiler_secret }}
+{% if enable_elasticsearch | bool %}
+connection_string = elasticsearch://{{ elasticsearch_address }}:{{ elasticsearch_port }}
+{% endif %}
 {% endif %}

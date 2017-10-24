@@ -3,6 +3,12 @@
 log_dir = /var/log/kolla/panko
 debug = {{ panko_logging_debug }}
 
+{% if service_name == 'panko-api' %}
+# Force panko-api.log or will use app.wsgi
+log_file = /var/log/kolla/panko/panko-api.log
+{% endif %}
+
+
 [database]
 {% if panko_database_type == "mongodb" %}
 event_connection = mongodb://{{ panko_database_user }}:{{ panko_database_password }}@{{ panko_database_mongodb_address }}/{{ panko_database_name }}
@@ -15,9 +21,9 @@ metering_connection = mysql+pymysql://{{ panko_database_user }}:{{ panko_databas
 
 [keystone_authtoken]
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
-project_domain_name = Default
+project_domain_name = {{ default_project_domain_name }}
 project_name = service
-user_domain_name = Default
+user_domain_name = {{ default_user_domain_name }}
 username = {{ panko_keystone_user }}
 password = {{ panko_keystone_password }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}

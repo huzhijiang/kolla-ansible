@@ -22,14 +22,12 @@
     - Restart panko-api container
 
 - name: Copying over panko.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/panko.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/panko.conf"
       - "{{ node_custom_config }}/panko/{{ item.key }}.conf"
       - "{{ node_custom_config }}/panko/{{ inventory_hostname }}/{{ item.key }}.conf"
@@ -59,6 +57,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/panko/policy.json"
+  run_once: True
   register: panko_policy
 
 - name: Copying over existing policy.json

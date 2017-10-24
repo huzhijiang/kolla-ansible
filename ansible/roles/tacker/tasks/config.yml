@@ -19,17 +19,16 @@
     - inventory_hostname in groups[item.value.group]
     - item.value.enabled
   notify:
-    - Restart tacker container
+    - Restart tacker-server container
+    - Restart tacker-conductor container
 
 - name: Copying over tacker.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/tacker.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/tacker.conf"
       - "{{ node_custom_config }}/tacker/{{ item.key }}.conf"
       - "{{ node_custom_config }}/tacker/{{ inventory_hostname }}/tacker.conf"
@@ -40,10 +39,12 @@
     - inventory_hostname in groups[item.value.group]
     - item.value.enabled | bool
   notify:
-    - Restart tacker container
+    - Restart tacker-server container
+    - Restart tacker-conductor container
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/tacker/policy.json"
+  run_once: True
   register: tacker_policy
 
 - name: Copying over existing policy.json
@@ -57,9 +58,10 @@
     - tacker_policy.stat.exists
   with_dict: "{{ tacker_services }}"
   notify:
-    - Restart tacker containers
+    - Restart tacker-server containers
+    - Restart tacker-conductor container
 
-- name: Check tacker containers
+- name: Check tacker container
   kolla_docker:
     action: "compare_container"
     name: "{{ item.value.container_name }}"
@@ -72,4 +74,5 @@
   register: check_tacker_containers
   with_dict: "{{ tacker_services }}"
   notify:
-    - Restart tacker container
+    - Restart tacker-server container
+    - Restart tacker-conductor container

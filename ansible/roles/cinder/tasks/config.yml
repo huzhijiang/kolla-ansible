@@ -24,15 +24,30 @@
     - Restart cinder-volume container
     - Restart cinder-backup container
 
+- name: Copying over cinder-wsgi.conf
+  vars:
+    service: "{{ cinder_services['cinder-api'] }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ node_config_directory }}/cinder-api/cinder-wsgi.conf"
+  with_first_found:
+    - "{{ node_custom_config }}/cinder/{{ inventory_hostname }}/cinder-wsgi.conf"
+    - "{{ node_custom_config }}/cinder/cinder-wsgi.conf"
+    - "cinder-wsgi.conf.j2"
+  register: wsgi_cinder_api
+  when:
+    - inventory_hostname in groups[service.group]
+    - service.enabled | bool
+  notify:
+    - Restart cinder-api container
+
 - name: Copying over cinder.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/cinder.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/cinder.conf"
       - "{{ node_custom_config }}/cinder/{{ item.key }}.conf"
       - "{{ node_custom_config }}/cinder/{{ inventory_hostname }}/cinder.conf"
@@ -50,6 +65,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/cinder/policy.json"
+  run_once: True
   register: cinder_policy
 
 - name: Copying over existing policy.json

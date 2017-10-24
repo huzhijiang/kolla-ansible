@@ -9,9 +9,9 @@
   when: inventory_hostname in groups['compute']
 
 - name: Copying over ceph.conf(s)
+  vars:
+    service_name: "{{ item }}"
   merge_configs:
-    vars:
-      service_name: "{{ item }}"
     sources:
       - "{{ role_path }}/../ceph/templates/ceph.conf.j2"
       - "{{ node_custom_config }}/ceph.conf"
@@ -27,6 +27,8 @@
     pool_name: "{{ nova_pool_name }}"
     pool_type: "{{ nova_pool_type }}"
     cache_mode: "{{ nova_cache_mode }}"
+    pool_pg_num: "{{ nova_pool_pg_num }}"
+    pool_pgp_num: "{{ nova_pool_pgp_num }}"
 
 # TODO(SamYaple): Improve changed_when tests
 - name: Pulling cephx keyring for nova
@@ -48,6 +50,9 @@
   command: docker exec ceph_mon ceph auth get-key client.cinder
   register: cinder_cephx_raw_key
   delegate_to: "{{ groups['ceph-mon'][0] }}"
+  when:
+    - enable_cinder | bool
+    - cinder_backend_ceph | bool
   changed_when: False
   run_once: True
 
@@ -72,7 +77,7 @@
       enabled: true
     - uuid: "{{ cinder_rbd_secret_uuid }}"
       name: client.cinder secret
-      enabled: "{{ cinder_backend_ceph }}"
+      enabled: "{{ enable_cinder | bool and cinder_backend_ceph | bool}}"
 
 - name: Pushing secrets key for libvirt
   copy:
@@ -87,5 +92,5 @@
       content: "{{ nova_cephx_raw_key.stdout }}"
       enabled: true
     - uuid: "{{ cinder_rbd_secret_uuid }}"
-      content: "{{ cinder_cephx_raw_key.stdout }}"
-      enabled: "{{ cinder_backend_ceph }}"
+      content: "{{ cinder_cephx_raw_key.stdout|default('') }}"
+      enabled: "{{ enable_cinder | bool and cinder_backend_ceph | bool}}"

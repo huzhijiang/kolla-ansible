@@ -5,10 +5,10 @@ use_stderr = False
 log_dir = /var/log/kolla/tempest/
 
 [auth]
-admin_username = admin
+admin_username = {{ openstack_auth.username }}
 admin_password = {{ keystone_admin_password }}
-admin_project_name = admin
-admin_domain_name = default
+admin_project_name = {{ openstack_auth.project_name }}
+admin_domain_name = {{ openstack_auth.domain_name }}
 
 
 [dashboard]
@@ -47,6 +47,9 @@ uri_v3 = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_p
 region = {{ openstack_region_name }}
 http_image = {{ image_url }}
 
+[image-feature-enabled]
+api_v1 = False
+
 [network]
 region = {{ openstack_region_name }}
 public_network_id =  {{ tempest_public_network_id }}
@@ -66,8 +69,8 @@ region = {{ openstack_region_name }}
 region = {{ openstack_region_name }}
 
 [volume-feature-enabled]
-api_v1 = False
+api_v1 = True
 
 [validation]
-image_ssh_user = cirros
-image_ssh_password = cubswin:)
+image_ssh_user = {{ tempest_image_ssh_user }}
+image_ssh_password = {{ tempest_image_ssh_password }}

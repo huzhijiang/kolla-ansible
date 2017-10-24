@@ -24,14 +24,12 @@
     - Restart watcher-applier container
 
 - name: Copying over watcher.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/watcher.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/watcher.conf"
       - "{{ node_custom_config }}/watcher/{{ item.key }}.conf"
       - "{{ node_custom_config }}/watcher/{{ inventory_hostname }}/watcher.conf"
@@ -48,6 +46,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_custom_config }}/watcher/policy.json"
+  run_once: True
   register: watcher_policy
 
 - name: Copying over existing policy.json

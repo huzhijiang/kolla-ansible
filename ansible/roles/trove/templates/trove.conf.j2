@@ -21,6 +21,8 @@ cinder_url = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ cinder_api_p
 {% endif %}
 {% if enable_swift | bool %}
 swift_url = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ swift_proxy_server_port }}/v1/AUTH_
+{% elif enable_ceph_rgw_keystone | bool %}
+swift_url = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ rgw_port }}/v1/AUTH_
 {% endif %}
 
 [database]
@@ -28,9 +30,9 @@ connection = mysql+pymysql://{{ trove_database_user }}:{{ trove_database_passwor
 
 [keystone_authtoken]
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
-project_domain_name = Default
+project_domain_name = {{ default_project_domain_name }}
 project_name = service
-user_domain_name = Default
+user_domain_name = {{ default_user_domain_name }}
 username = {{ trove_keystone_user }}
 password = {{ trove_keystone_password }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
@@ -42,4 +44,14 @@ driver = messagingv2
 topics = 'notifications'
 {% else %}
 driver = noop
+{% endif %}
+
+{% if enable_osprofiler | bool %}
+[profiler]
+enabled = true
+trace_sqlalchemy = true
+hmac_keys = {{ osprofiler_secret }}
+{% if enable_elasticsearch | bool %}
+connection_string = elasticsearch://{{ elasticsearch_address }}:{{ elasticsearch_port }}
+{% endif %}
 {% endif %}

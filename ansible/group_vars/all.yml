@@ -15,14 +15,15 @@ project: ""
 # The directory to store the config files on the destination node
 node_config_directory: "/etc/kolla/{{ project }}"
 
+# The group which own node_config_directory, you can use a non-root
+# user to deploy kolla
+config_owner_user: "root"
+config_owner_group: "root"
+
 
 ###################
 # Kolla options
 ###################
-
-# Which orchestration engine to use. Valid options are [ ANSIBLE, KUBERNETES ]
-orchestration_engine: "ANSIBLE"
-
 # Valid options are [ COPY_ONCE, COPY_ALWAYS ]
 config_strategy: "COPY_ALWAYS"
 
@@ -38,23 +39,33 @@ kolla_external_fqdn: "{{ kolla_internal_fqdn if kolla_external_vip_address == ko
 
 kolla_enable_sanity_checks: "no"
 
+kolla_enable_sanity_barbican: "{{ kolla_enable_sanity_checks }}"
 kolla_enable_sanity_keystone: "{{ kolla_enable_sanity_checks }}"
 kolla_enable_sanity_glance: "{{ kolla_enable_sanity_checks }}"
 kolla_enable_sanity_cinder: "{{ kolla_enable_sanity_checks }}"
 kolla_enable_sanity_swift: "{{ kolla_enable_sanity_checks }}"
 
+kolla_dev_repos_directory: "/opt/stack/"
+kolla_dev_repos_git: "https://git.openstack.org/openstack"
+kolla_dev_repos_pull: "no"
+kolla_dev_mode: "no"
+
+# Proxy settings for containers such as magnum that need internet access
+container_http_proxy: ""
+container_https_proxy: ""
+container_no_proxy: "localhost,127.0.0.1"
+
+container_proxy:
+  http_proxy: "{{ container_http_proxy }}"
+  https_proxy: "{{ container_https_proxy }}"
+  no_proxy: "{{ container_no_proxy }},{{ api_interface_address }},{{ kolla_internal_vip_address }}"
 
 ####################
 # kolla-kubernetes
 ####################
 # By default, Kolla API services bind to the network address assigned
-# to the api_interface.  Allow the bind address to be an override.  In
-# some cases (Kubernetes), the api_interface address is not known
-# until container runtime, and thus it is necessary to bind to all
-# interfaces "0.0.0.0".  When used outside of Kubernetes, binding to
-# all interfaces may present a security issue, and thus is not
-# recommended.
-api_interface_address:  "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] if orchestration_engine == 'ANSIBLE' else '0.0.0.0' }}"
+# to the api_interface.  Allow the bind address to be an override.
+api_interface_address:  "{{ hostvars[inventory_hostname]['ansible_' + api_interface]['ipv4']['address'] }}"
 
 ################
 # Chrony options
@@ -107,6 +118,11 @@ docker_common_options:
 keepalived_virtual_router_id: "51"
 
 
+#######################
+# Elasticsearch Options
+#######################
+es_heap_size: "1G"
+
 ####################
 # Networking options
 ####################
@@ -119,61 +135,90 @@ cluster_interface: "{{ network_interface }}"
 tunnel_interface: "{{ network_interface }}"
 bifrost_network_interface: "{{ network_interface }}"
 dns_interface: "{{ network_interface }}"
-tunnel_interface_address: "{{ hostvars[inventory_hostname]['ansible_' + tunnel_interface]['ipv4']['address'] if orchestration_engine == 'ANSIBLE' else '0.0.0.0' }}"
+tunnel_interface_address: "{{ hostvars[inventory_hostname]['ansible_' + tunnel_interface]['ipv4']['address'] }}"
 
-# Valid options are [ openvswitch, linuxbridge, sfc ]
+# Valid options are [ openvswitch, linuxbridge, vmware_nsxv, vmware_dvs, opendaylight ]
 neutron_plugin_agent: "openvswitch"
 
 # The default ports used by each service.
+# The list should be in alphabetical order
 aodh_api_port: "8042"
 
 barbican_api_port: "9311"
 
-ceilometer_api_port: "8777"
+cinder_api_port: "8776"
 
 congress_api_port: "1789"
 
 cloudkitty_api_port: "8889"
+
+collectd_udp_port: "25826"
 
 designate_api_port: "9001"
 designate_bind_port: "53"
 designate_mdns_port: "5354"
 designate_rndc_port: "953"
 
+elasticsearch_port: "9200"
+
+etcd_client_port: "2379"
+etcd_peer_port: "2380"
+
+fluentd_syslog_port: "5140"
+
 freezer_api_port: "9090"
+
+glance_api_port: "9292"
+glance_registry_port: "9191"
+
+gnocchi_api_port: "8041"
+
+grafana_server_port: "3000"
+
+haproxy_stats_port: "1984"
+
+heat_api_port: "8004"
+heat_api_cfn_port: "8000"
+
+horizon_port: "80"
+
+influxdb_admin_port: "8083"
+influxdb_http_port: "8086"
+
+ironic_api_port: "6385"
+ironic_inspector_port: "5050"
 
 iscsi_port: "3260"
 
-gnocchi_api_port: "8041"
+karbor_api_port: "8799"
+
+keystone_public_port: "5000"
+keystone_admin_port: "35357"
+keystone_ssh_port: "8023"
+
+kibana_server_port: "5601"
+
+kuryr_port: "23750"
+
+magnum_api_port: "9511"
+
+manila_api_port: "8786"
 
 mariadb_port: "{{ database_port }}"
 mariadb_wsrep_port: "4567"
 mariadb_ist_port: "4568"
 mariadb_sst_port: "4444"
 
-panko_api_port: "8977"
+memcached_port: "11211"
 
-rabbitmq_port: "5672"
-rabbitmq_management_port: "15672"
-rabbitmq_cluster_port: "25672"
-rabbitmq_epmd_port: "4369"
+mistral_api_port: "8989"
 
 mongodb_port: "27017"
 mongodb_web_port: "28017"
 
-haproxy_stats_port: "1984"
+murano_api_port: "8082"
 
-keystone_public_port: "5000"
-keystone_admin_port: "35357"
-keystone_ssh_port: "8023"
-
-glance_api_port: "9292"
-glance_registry_port: "9191"
-
-octavia_api_port: "9876"
-octavia_health_manager_port: "5555"
-
-placement_api_port: "8780"
+neutron_server_port: "9696"
 
 nova_api_port: "8774"
 nova_metadata_port: "8775"
@@ -181,11 +226,45 @@ nova_novncproxy_port: "6080"
 nova_spicehtml5proxy_port: "6082"
 nova_serialproxy_port: "6083"
 
-neutron_server_port: "9696"
+octavia_api_port: "9876"
+octavia_health_manager_port: "5555"
 
-cinder_api_port: "8776"
+outward_rabbitmq_port: "5674"
+outward_rabbitmq_management_port: "15674"
+outward_rabbitmq_cluster_port: "25674"
+outward_rabbitmq_epmd_port: "4371"
 
-memcached_port: "11211"
+ovsdb_port: "6640"
+
+panko_api_port: "8977"
+
+placement_api_port: "8780"
+
+qdrouterd_port: "15676"
+
+rabbitmq_port: "5672"
+rabbitmq_management_port: "15672"
+rabbitmq_cluster_port: "25672"
+rabbitmq_epmd_port: "4369"
+
+redis_port: "6379"
+redis_sentinel_port: "26379"
+
+rdp_port: "8001"
+
+rgw_port: "6780"
+
+sahara_api_port: "8386"
+
+searchlight_api_port: "9393"
+
+senlin_api_port: "8778"
+
+skydive_analyzer_port: "8085"
+skydive_agents_port: "8090"
+
+solum_application_deployment_port: "9777"
+solum_image_builder_port: "9778"
 
 swift_proxy_server_port: "8080"
 swift_object_server_port: "6000"
@@ -193,61 +272,29 @@ swift_account_server_port: "6001"
 swift_container_server_port: "6002"
 swift_rsync_port: "10873"
 
-sahara_api_port: "8386"
-
-heat_api_port: "8004"
-heat_api_cfn_port: "8000"
-
-horizon_port: "80"
-
-murano_api_port: "8082"
-
-ironic_api_port: "6385"
-ironic_inspector_port: "5050"
-
-magnum_api_port: "9511"
-
-solum_application_deployment_port: "9777"
-
-solum_image_builder_port: "9778"
-
-rgw_port: "6780"
-
-mistral_api_port: "8989"
-
-kibana_server_port: "5601"
-
-elasticsearch_port: "9200"
-
-manila_api_port: "8786"
-
-watcher_api_port: "9322"
-
-influxdb_admin_port: "8083"
-influxdb_http_port: "8086"
-
-senlin_api_port: "8778"
-
-trove_api_port: "8779"
-
-etcd_client_port: "2379"
-etcd_peer_port: "2380"
-
-karbor_api_port: "8799"
-
-kuryr_port: "23750"
-
-searchlight_api_port: "9393"
-
-grafana_server_port: "3000"
+syslog_udp_port: "{{ fluentd_syslog_port }}"
 
 tacker_server_port: "9890"
 
-fluentd_syslog_port: "5140"
+trove_api_port: "8779"
 
-zun_api_port: "9512"
+watcher_api_port: "9322"
 
-ovsdb_port: "6640"
+zun_api_port: "9517"
+
+opendaylight_clustering_port: "2550"
+opendaylight_restconf_port: "8087"
+opendaylight_restconf_port_backup: "8182"
+opendaylight_haproxy_restconf_port: "8088"
+opendaylight_haproxy_restconf_port_backup: "8183"
+opendaylight_jetty_conf_port: "8543"
+opendaylight_jetty_conf2_port: "8443"
+opendaylight_tomcat_port: "8282"
+opendaylight_tomcat_redirect_port: "8663"
+opendaylight_karaf_ssh_port: "8101"
+opendaylight_openflow_port: "6653"
+opendaylight_ovsdb_port: "6641"
+opendaylight_haproxy_ovsdb_port: "6642"
 
 public_protocol: "{{ 'https' if kolla_enable_tls_external | bool else 'http' }}"
 internal_protocol: "http"
@@ -265,7 +312,8 @@ openstack_region_name: "RegionOne"
 multiple_regions_names:
     - "{{ openstack_region_name }}"
 
-openstack_service_workers: "{{ [ansible_processor_vcpus, 5]|min if orchestration_engine == 'ANSIBLE' else '1'}}"
+openstack_service_workers: "{{ [ansible_processor_vcpus, 5]|min }}"
+openstack_service_rpc_workers: "{{ [ansible_processor_vcpus, 3]|min }}"
 
 # Optionally allow Kolla to set sysctl values
 set_sysctl: "yes"
@@ -282,6 +330,10 @@ openstack_auth:
     project_name: "admin"
     domain_name: "default"
 
+# Endpoint type used to connect with OpenStack services with ansible modules.
+# Valid options are [ public, internal, admin ]
+openstack_interface: "admin"
+
 # These roles are required for Kolla to be operation, however a savvy deployer
 # could disable some of these required roles and run their own services.
 enable_glance: "yes"
@@ -292,6 +344,7 @@ enable_memcached: "yes"
 enable_neutron: "yes"
 enable_nova: "yes"
 enable_rabbitmq: "yes"
+enable_outward_rabbitmq: "{{ enable_murano | bool }}"
 
 # Additional optional OpenStack features and services are specified here
 enable_aodh: "no"
@@ -303,21 +356,26 @@ enable_ceph: "no"
 enable_ceph_rgw: "no"
 enable_chrony: "no"
 enable_cinder: "no"
+enable_cinder_backup: "yes"
 enable_cinder_backend_hnas_iscsi: "no"
 enable_cinder_backend_hnas_nfs: "no"
-enable_cinder_backend_iscsi: "no"
+enable_cinder_backend_iscsi: "{{ enable_cinder_backend_lvm | bool or enable_cinder_backend_hnas_iscsi | bool or enable_cinder_backend_zfssa_iscsi | bool }}"
 enable_cinder_backend_lvm: "no"
 enable_cinder_backend_nfs: "no"
+enable_cinder_backend_zfssa_iscsi: "no"
 enable_cloudkitty: "no"
 enable_congress: "no"
 enable_designate: "no"
 enable_etcd: "no"
+enable_fluentd: "yes"
 enable_freezer: "no"
 enable_gnocchi: "no"
 enable_grafana: "no"
 enable_heat: "yes"
 enable_horizon: "yes"
 enable_horizon_cloudkitty: "{{ enable_cloudkitty | bool }}"
+enable_horizon_designate: "{{ enable_designate | bool }}"
+enable_horizon_fwaas: "{{ enable_neutron_fwaas | bool }}"
 enable_horizon_freezer: "{{ enable_freezer | bool }}"
 enable_horizon_ironic: "{{ enable_ironic | bool }}"
 enable_horizon_karbor: "{{ enable_karbor | bool }}"
@@ -333,9 +391,11 @@ enable_horizon_solum: "{{ enable_solum | bool }}"
 enable_horizon_tacker: "{{ enable_tacker | bool }}"
 enable_horizon_trove: "{{ enable_trove | bool }}"
 enable_horizon_watcher: "{{ enable_watcher | bool }}"
+enable_horizon_zun: "{{ enable_zun | bool }}"
+enable_hyperv: "no"
 enable_influxdb: "no"
 enable_ironic: "no"
-enable_iscsid: "{{ enable_cinder_backend_iscsi | bool or enable_cinder_backend_lvm | bool or enable_ironic | bool }}"
+enable_iscsid: "{{ enable_cinder_backend_iscsi | bool or enable_ironic | bool }}"
 enable_karbor: "no"
 enable_kuryr: "no"
 enable_magnum: "no"
@@ -353,14 +413,23 @@ enable_neutron_fwaas: "no"
 enable_neutron_qos: "no"
 enable_neutron_agent_ha: "no"
 enable_neutron_bgp_dragent: "no"
+enable_neutron_provider_networks: "no"
+enable_neutron_segments: "no"
+enable_neutron_sfc: "no"
 enable_nova_serialconsole_proxy: "no"
 enable_octavia: "no"
+enable_opendaylight: "no"
 enable_openvswitch: "{{ neutron_plugin_agent != 'linuxbridge' | bool }}"
+enable_ovs_dpdk: "no"
+enable_osprofiler: "no"
 enable_panko: "no"
+enable_qdrouterd: "no"
 enable_rally: "no"
+enable_redis: "no"
 enable_sahara: "no"
 enable_searchlight: "no"
 enable_senlin: "no"
+enable_skydive: "no"
 enable_solum: "no"
 enable_swift: "no"
 enable_tacker: "no"
@@ -371,10 +440,11 @@ enable_vmtp: "no"
 enable_watcher: "no"
 enable_zun: "no"
 
+designate_keystone_user: "designate"
 ironic_keystone_user: "ironic"
 neutron_keystone_user: "neutron"
 nova_keystone_user: "nova"
-designate_keystone_user: "designate"
+placement_keystone_user: "placement"
 
 # Nova fake driver and the number of fake driver per compute node
 enable_nova_fake: "no"
@@ -391,16 +461,21 @@ enable_destroy_images: "no"
 ####################
 
 elasticsearch_address: "{{ kolla_internal_vip_address }}"
-elasticsearch_protocol: "{{ internal_protocol }}"
-
-enable_elasticsearch: "{{ 'yes' if enable_central_logging | bool or enable_freezer | bool else 'no' }}"
+enable_elasticsearch: "{{ 'yes' if enable_central_logging | bool or enable_freezer | bool or enable_osprofiler | bool or enable_skydive | bool else 'no' }}"
 enable_kibana: "{{ 'yes' if enable_central_logging | bool else 'no' }}"
 
 ####################
 # RabbitMQ options
 ####################
+rabbitmq_hipe_compile: "no"
 rabbitmq_user: "openstack"
 rabbitmq_version: "rabbitmq_server-3.6/plugins/rabbitmq_clusterer-3.6.x.ez/rabbitmq_clusterer-3.6.x-667f92b0/ebin"
+outward_rabbitmq_user: "openstack"
+
+####################
+# Qdrouterd options
+####################
+qdrouterd_user: "openstack"
 
 ####################
 # HAProxy options
@@ -425,6 +500,12 @@ keystone_admin_url: "{{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keyston
 keystone_internal_url: "{{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}"
 keystone_public_url: "{{ public_protocol }}://{{ kolla_external_fqdn }}:{{ keystone_public_port }}"
 
+default_project_domain_name: "Default"
+default_project_domain_id: "default"
+
+default_user_domain_name: "Default"
+default_user_domain_id: "default"
+
 # Valid options are [ uuid, fernet ]
 keystone_token_provider: "uuid"
 fernet_token_expiry: 86400
@@ -437,16 +518,8 @@ keystone_default_user_role: "_member_"
 glance_backend_file: "{{ not enable_ceph | bool }}"
 glance_backend_ceph: "{{ enable_ceph }}"
 glance_backend_vmware: "no"
-
-#######################
-# Ceilometer options
-#######################
-# Valid options are [ mongodb, mysql, gnocchi ]
-ceilometer_database_type: "mongodb"
-
-# Valid options are [ mongodb, gnocchi, panko ]
-ceilometer_event_type: "mongodb"
-
+glance_backend_swift: "no"
+glance_file_datadir_volume: "glance"
 
 #######################
 # Barbican options
@@ -465,7 +538,7 @@ panko_database_type: "mysql"
 #################
 # Gnocchi options
 #################
-# Vaid options are [file, ceph]
+# Valid options are [file, ceph]
 gnocchi_backend_storage: "{{ 'ceph' if enable_ceph|bool else 'file' }}"
 
 
@@ -473,8 +546,11 @@ gnocchi_backend_storage: "{{ 'ceph' if enable_ceph|bool else 'file' }}"
 # Cinder options
 #################################
 cinder_backend_ceph: "{{ enable_ceph }}"
+cinder_backend_vmwarevc_vmdk: "no"
 cinder_volume_group: "cinder-volumes"
-cinder_backup_driver: "nfs"
+
+# Valid options are [ nfs, swift, ceph ]
+cinder_backup_driver: "ceph"
 cinder_backup_share: ""
 cinder_backup_mount_options_nfs: ""
 
@@ -490,25 +566,43 @@ cloudkitty_collector_backend: "ceilometer"
 # Valid options are [ bind9 ]
 designate_backend: "bind9"
 designate_ns_record: "sample.openstack.org"
-
+designate_backend_external: "no"
+designate_backend_external_bind9_nameservers: ""
 
 #######################
 # Neutron options
 #######################
 neutron_bgp_router_id: "1.1.1.1"
-neutron_bridge_name: "br-ex"
+neutron_bridge_name: "{{ 'br-dvs' if neutron_plugin_agent == 'vmware_dvs' else 'br-ex' }}"
+# Comma-separated type of enabled ml2 type drivers
+neutron_type_drivers: "flat,vlan,vxlan"
+# Comma-separated types of tenant networks (should be listed in 'neutron_type_drivers')
+# NOTE: for ironic this list should also contain 'flat'
+neutron_tenant_network_types: "vxlan"
+
+computes_need_external_bridge: "{{ enable_neutron_dvr | bool or enable_neutron_provider_networks | bool or enable_opendaylight | bool and neutron_plugin_agent != 'vmware_dvs' }}"
 
 #######################
 # Nova options
 #######################
 nova_backend_ceph: "{{ enable_ceph }}"
 nova_backend: "{{ 'rbd' if nova_backend_ceph | bool else 'default' }}"
+# Valid options are [ kvm, qemu, vmware ]
+nova_compute_virt_type: "kvm"
+
+#######################
+# Murano options
+#######################
+murano_agent_rabbitmq_vhost: "muranoagent"
+murano_agent_rabbitmq_user: "muranoagent"
 
 
 #######################
 # Horizon options
 #######################
 horizon_backend_database: "{{ enable_murano | bool }}"
+horizon_keystone_multidomain: False
+
 
 #################
 # Octavia options
@@ -563,9 +657,28 @@ ceph_erasure_profile: "k=4 m=2 ruleset-failure-domain=host"
 ceph_rule: "default host {{ 'indep' if ceph_pool_type == 'erasure' else 'firstn' }}"
 ceph_cache_rule: "cache host firstn"
 
-################################################
-# VMware - OpenStack WMware support
-################################################
-vmware_vcenter_host_ip:
-vmware_vcenter_host_username:
-vmware_vcenter_host_password:
+# Set the pgs and pgps for pool
+ceph_pool_pg_num: 128
+ceph_pool_pgp_num: 128
+
+#####################
+# VMware support
+######################
+vmware_vcenter_host_ip: "127.0.0.1"
+vmware_vcenter_host_username: "username"
+vmware_vcenter_cluster_name: "cluster-1"
+vmware_vcenter_insecure: "True"
+
+######################
+# OpenDaylight
+######################
+opendaylight_release: "0.6.1-Carbon"
+opendaylight_mechanism_driver: "opendaylight_v2"
+opendaylight_l3_service_plugin: "odl-router_v2"
+opendaylight_acl_impl: "learn"
+enable_opendaylight_qos: "no"
+enable_opendaylight_l3: "{{ enable_opendaylight }}"
+enable_opendaylight_legacy_netvirt_conntrack: "no"
+opendaylight_port_binding_type: "pseudo-agentdb-binding"
+opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack"
+opendaylight_allowed_network_types: '"flat", "vlan", "vxlan"'

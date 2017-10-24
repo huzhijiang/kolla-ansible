@@ -36,9 +36,6 @@ kd = imp.load_source('kolla_docker', kolla_docker_file)
 
 class ModuleArgsTest(base.BaseTestCase):
 
-    def setUp(self):
-        super(ModuleArgsTest, self).setUp()
-
     def test_module_args(self):
         argument_spec = dict(
             common_options=dict(required=False, type='dict', default=dict()),
@@ -52,7 +49,7 @@ class ModuleArgsTest(base.BaseTestCase):
                          'stop_container']),
             api_version=dict(required=False, type='str', default='auto'),
             auth_email=dict(required=False, type='str'),
-            auth_password=dict(required=False, type='str'),
+            auth_password=dict(required=False, type='str', no_log=True),
             auth_registry=dict(required=False, type='str'),
             auth_username=dict(required=False, type='str'),
             detach=dict(required=False, type='bool', default=True),
@@ -173,7 +170,7 @@ FAKE_DATA = {
 }
 
 
-@mock.patch("docker.Client")
+@mock.patch("docker.APIClient")
 def get_DockerWorker(mod_param, mock_dclient):
     module = mock.MagicMock()
     module.params = mod_param
@@ -298,7 +295,8 @@ class TestContainer(base.BaseTestCase):
         self.assertTrue(self.dw.changed)
         self.dw.dc.containers.assert_called_once_with(all=True)
         self.dw.dc.inspect_container.assert_called_once_with('my_container')
-        self.dw.dc.restart.assert_called_once_with('my_container', timeout=10)
+        self.dw.dc.stop.assert_called_once_with('my_container', timeout=10)
+        self.dw.dc.start.assert_called_once_with('my_container')
 
     def test_restart_container_not_exists(self):
         self.dw = get_DockerWorker({'name': 'fake-container',

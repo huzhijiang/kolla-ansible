@@ -3,7 +3,7 @@ debug = {{ searchlight_logging_debug }}
 
 policy_file = /etc/searchlight/policy.json
 log_dir = /var/log/kolla/searchlight
-transport_url = rabbit://{% for host in groups['rabbitmq'] %}{{ rabbitmq_user }}:{{ rabbitmq_password }}@{% if orchestration_engine == 'KUBERNETES' %}rabbitmq{% else %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}{% endif %}:{{ rabbitmq_port }}{% if not loop.last %},{% endif %}{% endfor %}
+transport_url = rabbit://{% for host in groups['rabbitmq'] %}{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ rabbitmq_port }}{% if not loop.last %},{% endif %}{% endfor %}
 
 
 [api]
@@ -25,16 +25,16 @@ flavor = keystone
 [keystone_authtoken]
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
 auth_url = {{ admin_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_admin_port }}
-project_domain_name = default
+project_domain_name = {{ default_project_domain_name }}
 project_name = service
-user_domain_name = default
+user_domain_name = {{ default_user_domain_name }}
 username = {{ searchlight_keystone_user }}
 password = {{ searchlight_keystone_password }}
 auth_type = password
 
 memcache_security_strategy = ENCRYPT
 memcache_secret_key = {{ memcache_secret_key }}
-memcached_servers = {% for host in groups['memcached'] %}{% if orchestration_engine == 'KUBERNETES' %}memcached{% else %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}{% endif %}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
+memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
 
 [service_credentials]
 auth_uri = {{ internal_protocol }}://{{ kolla_internal_fqdn }}:{{ keystone_public_port }}
@@ -50,7 +50,7 @@ auth_plugin = password
 
 memcache_security_strategy = ENCRYPT
 memcache_secret_key = {{ memcache_secret_key }}
-memcached_servers = {% for host in groups['memcached'] %}{% if orchestration_engine == 'KUBERNETES' %}memcached{% else %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}{% endif %}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
+memcached_servers = {% for host in groups['memcached'] %}{{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}:{{ memcached_port }}{% if not loop.last %},{% endif %}{% endfor %}
 
 [resource_plugin:os_cinder_volume]
 enabled = {{ enable_cinder | bool }}
@@ -73,7 +73,7 @@ enabled = {{ enable_swift | bool }}
 [resource_plugin:os_swift_object]
 enabled = {{ enable_swift | bool }}
 
-[resource_plugin:os_server_nova]
+[resource_plugin:os_nova_server]
 enabled = {{ enable_nova | bool }}
 
 [resource_plugin:os_nova_hypervisor]
@@ -81,6 +81,7 @@ enabled = {{ enable_nova | bool }}
 
 [resource_plugin:os_nova_flavor]
 enabled = {{ enable_nova | bool }}
+notifications_topics_exchanges = versioned_notifications,nova
 
 [resource_plugin:os_nova_servergroup]
 enabled = {{ enable_nova | bool }}
@@ -102,3 +103,27 @@ enabled = {{ enable_neutron | bool }}
 
 [resource_plugin:os_neutron_security_group]
 enabled = {{ enable_neutron | bool }}
+
+[resource_plugin:os_ironic_chassis]
+enabled = {{ enable_ironic | bool }}
+notifications_topics_exchanges = ironic_versioned_notifications,ironic
+
+[resource_plugin:os_ironic_node]
+enabled = {{ enable_ironic | bool }}
+notifications_topics_exchanges = ironic_versioned_notifications,ironic
+
+[resource_plugin:os_ironic_port]
+enabled = {{ enable_ironic | bool }}
+notifications_topics_exchanges = ironic_versioned_notifications,ironic
+
+{# TODO(blallau): enabling osprofiler when fixed in searchlight #}
+
+{# {% if enable_osprofiler | bool %} #}
+{# [profiler] #}
+{# enabled = true #}
+{# trace_sqlalchemy = true #}
+{# hmac_keys = {{ osprofiler_secret }} #}
+{# {% if enable_elasticsearch | bool %} #}
+{# connection_string = elasticsearch://{{ elasticsearch_address }}:{{ elasticsearch_port }} #}
+{# {% endif %} #}
+{# {% endif %} #}

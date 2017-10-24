@@ -40,17 +40,23 @@ Options:
     --key -k <key_path>                Specify path to ansible vault keyfile
     --help, -h                         Show this usage information
     --tags, -t <tags>                  Only run plays and tasks tagged with these values
+    --skip-tags <tags>                 Only run plays and tasks whose tags do not match these values
     --extra, -e <ansible variables>    Set additional variables as key=value or YAML/JSON passed to ansible-playbook
     --passwords <passwords_path>       Specify path to the passwords file
+    --limit <host>                     Specify host to run plays
+    --vault-id <@prompt or path>       Specify @prompt or password file (Ansible >=  2.4)
+    --ask-vault-pass                   Ask for vault password
+    --vault-password-file <path>       Specify password file for vault decrypt
     --verbose, -v                      Increase verbosity of ansible-playbook
 
 Commands:
     prechecks           Do pre-deployment checks for hosts
     check               Do post-deployment smoke tests
     mariadb_recovery    Recover a completely stopped mariadb cluster
-    bootstrap-servers   bootstrap servers with kolla deploy dependencies
+    bootstrap-servers   Bootstrap servers with kolla deploy dependencies
     destroy             Destroy Kolla containers, volumes and host configuration
-                        (--include-images to also destroy Kolla images)
+                            --include-images to also destroy Kolla images
+                            --include-dev to also destroy dev mode repos
     deploy              Deploy and start all kolla containers
     deploy-bifrost      Deploy and start bifrost container
     deploy-servers      Enroll and deploy servers with bifrost
@@ -64,9 +70,42 @@ Commands:
 EOF
 }
 
+function bash_completion {
+cat <<EOF
+--inventory -i
+--playbook -p
+--configdir
+--key -k
+--help -h
+--skip-tags
+--tags -t
+--extra -e
+--passwords
+--limit
+--vault-id
+--ask-vault-pass
+--vault-password-file
+--verbose -v
+prechecks
+check
+mariadb_recovery
+bootstrap-servers
+destroy
+deploy
+deploy-bifrost
+deploy-servers
+post-deploy
+pull
+reconfigure
+stop
+certificates
+upgrade
+genconfig
+EOF
+}
 
 SHORT_OPTS="hi:p:t:k:e:v"
-LONG_OPTS="help,inventory:,playbook:,tags:,key:,extra:,verbose,configdir:,passwords:,yes-i-really-really-mean-it,include-images"
+LONG_OPTS="help,inventory:,playbook:,skip-tags:,tags:,key:,extra:,verbose,configdir:,passwords:,limit:,vault-id:,ask-vault-pass,vault-password-file:,yes-i-really-really-mean-it,include-images,include-dev"
 ARGS=$(getopt -o "${SHORT_OPTS}" -l "${LONG_OPTS}" --name "$0" -- "$@") || { usage >&2; exit 2; }
 
 eval set -- "$ARGS"
@@ -81,8 +120,9 @@ CONFIG_DIR="/etc/kolla"
 PASSWORDS_FILE="${CONFIG_DIR}/passwords.yml"
 DANGER_CONFIRM=
 INCLUDE_IMAGES=
-# Serial is not recommended and disable in default. User could enable it by
-# simple configure ANSIBLE_SERIAL variable
+INCLUDE_DEV=
+# Serial is not recommended and disabled by default. Users can enable it by
+# configuring ANSIBLE_SERIAL variable.
 ANSIBLE_SERIAL=${ANSIBLE_SERIAL:-0}
 
 while [ "$#" -gt 0 ]; do
@@ -95,6 +135,11 @@ while [ "$#" -gt 0 ]; do
 
     (--playbook|-p)
             PLAYBOOK="$2"
+            shift 2
+            ;;
+
+    (--skip-tags)
+            EXTRA_OPTS="$EXTRA_OPTS --skip-tags $2"
             shift 2
             ;;
 
@@ -123,6 +168,11 @@ while [ "$#" -gt 0 ]; do
             shift 1
             ;;
 
+    (--include-dev)
+            INCLUDE_DEV="$1"
+            shift 1
+            ;;
+
     (--key|-k)
             VAULT_PASS_FILE="$2"
             EXTRA_OPTS="$EXTRA_OPTS --vault-password-file=$VAULT_PASS_FILE"
@@ -133,10 +183,32 @@ while [ "$#" -gt 0 ]; do
             EXTRA_OPTS="$EXTRA_OPTS -e $2"
             shift 2
             ;;
+
     (--passwords)
             PASSWORDS_FILE="$2"
             shift 2
             ;;
+
+    (--limit)
+            EXTRA_OPTS="$EXTRA_OPTS --limit $2"
+            shift 2
+            ;;
+
+    (--vault-id)
+            EXTRA_OPTS="$EXTRA_OPTS --vault-id $2"
+            shift 2
+            ;;
+
+    (--ask-vault-pass)
+            VERBOSITY="$EXTRA_OPTS --ask-vault-pass"
+            shift 1
+            ;;
+
+    (--vault-password-file)
+            EXTRA_OPTS="$EXTRA_OPTS --vault-password-file $2"
+            shift 2
+            ;;
+
     (--help|-h)
             usage
             shift
@@ -175,6 +247,9 @@ case "$1" in
         PLAYBOOK="${BASEDIR}/ansible/destroy.yml"
         if [[ "${INCLUDE_IMAGES}" == "--include-images" ]]; then
             EXTRA_OPTS="$EXTRA_OPTS -e destroy_include_images=yes"
+        fi
+        if [[ "${INCLUDE_DEV}" == "--include-dev" ]]; then
+            EXTRA_OPTS="$EXTRA_OPTS -e destroy_include_dev=yes"
         fi
         if [[ "${DANGER_CONFIRM}" != "--yes-i-really-really-mean-it" ]]; then
             cat << EOF
@@ -232,6 +307,10 @@ EOF
 (genconfig)
         ACTION="Generate configuration files for enabled OpenStack services"
         EXTRA_OPTS="$EXTRA_OPTS -e action=config"
+        ;;
+(bash-completion)
+        bash_completion
+        exit 0
         ;;
 (*)     usage
         exit 0

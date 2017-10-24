@@ -255,6 +255,7 @@
     name: "{{ service.container_name }}"
     image: "{{ service.image }}"
     privileged: "{{ service.privileged | default(False) }}"
+    ipc_mode: "{{ service.ipc_mode | default(omit) }}"
     volumes: "{{ service.volumes|reject('equalto', '')|list }}"
   when:
     - action != "config"
@@ -263,6 +264,7 @@
     - config_json.changed | bool
       or nova_conf.changed | bool
       or policy_json.changed | bool
+      or vcenter_ca_file | bool
       or nova_compute_container.changed | bool
 
 - name: Restart nova-compute-ironic container

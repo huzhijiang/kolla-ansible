@@ -34,14 +34,12 @@
     - Restart freezer-api container
 
 - name: Copying over freezer-api.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/freezer-api.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/freezer.conf"
       - "{{ node_custom_config }}/freezer/{{ item.key }}.conf"
       - "{{ node_custom_config }}/freezer/{{ inventory_hostname }}/{{ item.key }}.conf"
@@ -56,6 +54,7 @@
 
 - name: Check if policies shall be overwritten
   local_action: stat path="{{ node_config_directory }}/freezer/policy.json"
+  run_once: True
   register: freezer_policy
 
 - name: Copying over existing policy.json

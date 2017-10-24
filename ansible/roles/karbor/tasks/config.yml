@@ -24,14 +24,12 @@
     - Restart karbor-operationengine container
 
 - name: Copying over karbor.conf
+  vars:
+    service_name: "{{ item.key }}"
   merge_configs:
-    vars:
-      service_name: "{{ item.key }}"
     sources:
       - "{{ role_path }}/templates/karbor.conf.j2"
       - "{{ node_custom_config }}/global.conf"
-      - "{{ node_custom_config }}/database.conf"
-      - "{{ node_custom_config }}/messaging.conf"
       - "{{ node_custom_config }}/karbor.conf"
       - "{{ node_custom_config }}/karbor/{{ item.key }}.conf"
       - "{{ node_custom_config }}/karbor/{{ inventory_hostname }}/karbor.conf"

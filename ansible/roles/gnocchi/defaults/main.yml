@@ -45,6 +45,8 @@ ceph_gnocchi_cache_mode: "{{ ceph_cache_mode }}"
 gnocchi_pool_name: "{{ ceph_gnocchi_pool_name }}"
 gnocchi_pool_type: "{{ ceph_gnocchi_pool_type }}"
 gnocchi_cache_mode: "{{ ceph_gnocchi_cache_mode }}"
+gnocchi_pool_pg_num: "{{ ceph_pool_pg_num }}"
+gnocchi_pool_pgp_num: "{{ ceph_pool_pgp_num }}"
 
 
 ####################
@@ -58,16 +60,19 @@ gnocchi_database_address: "{{ kolla_internal_fqdn }}:{{ database_port }}"
 ####################
 # Docker
 ####################
-gnocchi_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-gnocchi-api"
-gnocchi_api_tag: "{{ openstack_release }}"
+gnocchi_install_type: "{{ kolla_install_type }}"
+gnocchi_tag: "{{ openstack_release }}"
+
+gnocchi_api_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ gnocchi_install_type }}-gnocchi-api"
+gnocchi_api_tag: "{{ gnocchi_tag }}"
 gnocchi_api_image_full: "{{ gnocchi_api_image }}:{{ gnocchi_api_tag }}"
 
-gnocchi_statsd_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-gnocchi-statsd"
-gnocchi_statsd_tag: "{{ openstack_release }}"
+gnocchi_statsd_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ gnocchi_install_type }}-gnocchi-statsd"
+gnocchi_statsd_tag: "{{ gnocchi_tag }}"
 gnocchi_statsd_image_full: "{{ gnocchi_statsd_image }}:{{ gnocchi_statsd_tag }}"
 
-gnocchi_metricd_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ kolla_install_type }}-gnocchi-metricd"
-gnocchi_metricd_tag: "{{ openstack_release }}"
+gnocchi_metricd_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ gnocchi_install_type }}-gnocchi-metricd"
+gnocchi_metricd_tag: "{{ gnocchi_tag }}"
 gnocchi_metricd_image_full: "{{ gnocchi_metricd_image }}:{{ gnocchi_metricd_tag }}"
 
 ####################
