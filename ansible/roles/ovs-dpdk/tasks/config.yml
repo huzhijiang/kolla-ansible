@@ -40,6 +40,8 @@
     hugepage_mountpoint: "{{ ovs_hugepage_mountpoint }}"
     ovs_physical_port_policy: "{{ ovs_physical_port_policy }}"
     ip_assignment_mode: "{{ dpdk_tunnel_interface_address_mode }}"
+    dpdk_interface_driver: "{{ ovs_dpdk_interface_driver }}"
+    pmd_coremask: "{{ ovs_dpdk_pmd_coremask }}"
 
 
 # TODO check the environment change
