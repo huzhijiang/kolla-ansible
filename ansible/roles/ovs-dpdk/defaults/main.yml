@@ -60,7 +60,7 @@ ovs_cidr_mappings: "{% if neutron_bridge_name.split(',')|length != 1 %} {neutron
 ovs_mem_channels: 4
 ovs_socket_mem: 1024
 ovs_hugepage_mountpoint: /dev/hugepages
-ovs_dpdk_interface_driver: vfio_pci
+ovs_dpdk_interface_driver: vfio-pci
 
 #This is mask for two CPUs each from a NUMA
 ovs_dpdk_pmd_coremask: 0xc
