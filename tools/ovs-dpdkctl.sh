@@ -99,7 +99,7 @@ function gen_config {
     for nic in $(list_dpdk_nics); do
         set_value $nic driver ${dpdk_interface_driver:-"uio_pci_generic"}
     done
-    set_value ovs pci_whitelist "'${pci_whitelist:-$(generate_pciwhitelist)}'"
+    set_value ovs pci_whitelist "${pci_whitelist:-$(generate_pciwhitelist)}"
 
 }
 
@@ -221,6 +221,11 @@ function init {
     init_ovs_db
     init_ovs_bridges
     init_ovs_interfaces
+
+    ip_mode="$(get_value ovs ip_assignment_mode)"
+    if  [[ $ip_mode == "systemd" ]]; then
+        systemctl start ovs-dpdk-bridge
+    fi
 }
 
 function install_network_manager_conf {
@@ -263,7 +268,7 @@ EOF
     fi
 
     ip_mode="$(get_value ovs ip_assignment_mode)"
-    if [[ ip_mode == "systemd" ]]; then
+    if [[ $ip_mode == "systemd" ]]; then
         install_tunnel_bridge_service $bridge
     fi
 }
@@ -372,10 +377,6 @@ function install {
     configure_kernel_modules
     systemctl start ovs-dpdkctl
     install_network_manager_conf
-    ip_mode="$(get_value ovs ip_assignment_mode)"
-    if  [[ ip_mode == "systemd" ]]; then
-        systemctl start ovs-dpdk-bridge
-    fi
 }
 
 function uninstall {
