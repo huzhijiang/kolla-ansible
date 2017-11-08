@@ -59,7 +59,7 @@ tunnel_interface_cidr: "{{dpdk_tunnel_interface_address}}/{{ tunnel_interface_ne
 ovs_cidr_mappings: "{% if neutron_bridge_name.split(',')|length != 1 %} {neutron_bridge_name.split(',')[0]}:{{ tunnel_interface_cidr }} {% else %} {{ neutron_bridge_name }}:{{ tunnel_interface_cidr }} {% endif %}"
 ovs_mem_channels: 4
 ovs_socket_mem: 1024
-ovs_hugepage_mountpoint: /dev/hugepages
+ovs_hugepage_mountpoint: /mnt/huge_1GB
 ovs_dpdk_interface_driver: vfio-pci
 
 #This is mask for two CPUs each from a NUMA
