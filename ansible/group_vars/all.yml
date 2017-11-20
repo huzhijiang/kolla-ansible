@@ -415,7 +415,7 @@ enable_vmtp: "no"
 enable_watcher: "no"
 enable_zun: "no"
 
-ovs_datapath: "{{ 'netdev' if enable_ovs_dpdk else 'system' }}"
+ovs_datapath: "{{ 'netdev' if enable_ovs_dpdk | bool else 'system' }}"
 
 ironic_keystone_user: "ironic"
 neutron_keystone_user: "neutron"
