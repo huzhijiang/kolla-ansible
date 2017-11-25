@@ -642,10 +642,10 @@ vmware_vcenter_insecure: "True"
 ######################
 # OpenDaylight
 ######################
-opendaylight_release: "0.6.1-Carbon"
+opendaylight_release: "0.6.3-SNAPSHOT"
 opendaylight_mechanism_driver: "opendaylight_v2"
 opendaylight_l3_service_plugin: "odl-router_v2"
-opendaylight_acl_impl: "learn"
+opendaylight_acl_impl: "stateful"
 enable_opendaylight_qos: "no"
 enable_opendaylight_l3: "{{ enable_opendaylight }}"
 enable_opendaylight_legacy_netvirt_conntrack: "no"
