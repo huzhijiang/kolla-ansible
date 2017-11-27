@@ -380,6 +380,7 @@ function install {
 }
 
 function uninstall {
+    systemctl stop ovs-dpdk-bridge
     systemctl stop ovs-dpdkctl
     if [ -e "$SERVICE_FILE" ]; then
         uninstall_service
