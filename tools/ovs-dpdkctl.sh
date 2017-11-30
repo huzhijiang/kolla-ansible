@@ -221,11 +221,6 @@ function init {
     init_ovs_db
     init_ovs_bridges
     init_ovs_interfaces
-
-    ip_mode="$(get_value ovs ip_assignment_mode)"
-    if  [[ $ip_mode == "systemd" ]]; then
-        systemctl start ovs-dpdk-bridge
-    fi
 }
 
 function install_network_manager_conf {
@@ -377,6 +372,11 @@ function install {
     configure_kernel_modules
     systemctl start ovs-dpdkctl
     install_network_manager_conf
+
+    ip_mode="$(get_value ovs ip_assignment_mode)"
+    if  [[ $ip_mode == "systemd" ]]; then
+        systemctl start ovs-dpdk-bridge
+    fi
 }
 
 function uninstall {
