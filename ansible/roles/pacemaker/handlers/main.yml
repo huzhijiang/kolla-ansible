@@ -18,6 +18,7 @@
     - service.host_in_groups | bool
     - config_json | changed
       or corosync_container | changed
+      or corosync_conf | changed
   notify:
     - Restart pacemaker container
 
@@ -39,6 +40,6 @@
     - service.enabled | bool
     - service.host_in_groups | bool
     - config_json | changed
-      or corosync_container | changed
+      or pacemaker_container | changed
 
 

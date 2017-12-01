@@ -21,6 +21,23 @@
   notify:
   - "Restart {{ item.key }} container"
 
+- name: Copying over corosync.conf
+  vars:
+    service: "{{ pacemaker_services['corosync'] }}"
+  template:
+    src: "{{ item }}"
+    dest: "{{ node_config_directory }}/corosync/corosync.conf"
+  register: corosync_conf
+  when:
+    - inventory_hostname in groups[service.group]
+    - service.enabled | bool
+  with_first_found:
+    - "{{ node_custom_config }}/corosync/{{ inventory_hostname }}/corosync.conf"
+    - "{{ node_custom_config }}/corosync/corosync.conf"
+    - "corosync.conf.j2"
+  notify:
+    - Restart corosync container
+
 # TODO check the environment change
 - name: Check pacemaker containers
   kolla_docker:
