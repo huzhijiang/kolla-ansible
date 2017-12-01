@@ -652,3 +652,9 @@ enable_opendaylight_legacy_netvirt_conntrack: "no"
 opendaylight_port_binding_type: "pseudo-agentdb-binding"
 opendaylight_features: "odl-mdsal-apidocs,odl-netvirt-openstack"
 opendaylight_allowed_network_types: '"flat", "vlan", "vxlan"'
+
+
+######################
+# OpenDaylight
+######################
+pacemaker_cluster_name: "kollacluster"

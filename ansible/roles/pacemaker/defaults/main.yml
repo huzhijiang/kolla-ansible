@@ -1,0 +1,48 @@
+---
+####################
+# Services
+####################
+
+pacemaker_services:
+  corosync:
+    container_name: "corosync"
+    image: "{{ corosync_image_full }}"
+    enabled: True
+    privileged: True
+    group: "pacemaker"
+    host_in_groups: "{{ inventory_hostname in groups['pacemaker'] }}"
+    volumes:
+      - "{{ node_config_directory }}/corosync/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/run:/run:shared"
+      - "kolla_logs:/var/log/kolla/"
+  pacemaker:
+    container_name: "pacemaker"
+    image: "{{ pacemaker_image_full }}"
+    enabled: True
+    privileged: True
+    group: "pacemaker"
+    host_in_groups: "{{ inventory_hostname in groups['pacemaker'] }}"
+    volumes:
+      - "{{ node_config_directory }}/pacemaker/:{{ container_config_directory }}/:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/run:/run:shared"
+      - "kolla_logs:/var/log/kolla/"
+
+####################
+# configs
+####################
+
+####################
+# Docker
+####################
+pacemaker_base_install_type: "{{ kolla_install_type }}"
+pacemaker_base_tag: "{{ openstack_release }}"
+
+corosync_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ pacemaker_base_install_type }}-corosync"
+corosync_tag: "{{ pacemaker_base_tag }}"
+corosync_image_full: "{{ corosync_image }}:{{ corosync_tag }}"
+
+pacemaker_image: "{{ docker_registry ~ '/' if docker_registry else '' }}{{ docker_namespace }}/{{ kolla_base_distro }}-{{ pacemaker_base_install_type }}-pacemaker"
+pacemaker_tag: "{{ pacemaker_base_tag }}"
+pacemaker_image_full: "{{ pacemaker_image }}:{{ pacemaker_tag }}"

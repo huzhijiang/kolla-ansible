@@ -1,0 +1,44 @@
+---
+- name: Restart corosync container
+  vars:
+    service_name: "corosync"
+    service: "{{ pacemaker_services[service_name] }}"
+    config_json: "{{ pacemaker_config_jsons.results|selectattr('item.key', 'equalto', service_name)|first }}"
+    corosync_container: "{{ check_pacemaker_containers.results|selectattr('item.key', 'equalto', service_name)|first }}"
+  kolla_docker:
+    action: "recreate_or_restart_container"
+    common_options: "{{ docker_common_options }}"
+    name: "{{ service.container_name }}"
+    image: "{{ service.image }}"
+    volumes: "{{ service.volumes }}"
+    privileged: "{{ service.privileged | default(True) }}"
+  when:
+    - action != "config"
+    - service.enabled | bool
+    - service.host_in_groups | bool
+    - config_json | changed
+      or corosync_container | changed
+  notify:
+    - Restart pacemaker container
+
+- name: Restart pacemaker container
+  vars:
+    service_name: "pacemaker"
+    service: "{{ pacemaker_services[service_name] }}"
+    config_json: "{{ pacemaker_config_jsons.results|selectattr('item.key', 'equalto', service_name)|first }}"
+    pacemaker_container: "{{ check_pacemaker_containers.results|selectattr('item.key', 'equalto', service_name)|first }}"
+  kolla_docker:
+    action: "recreate_or_restart_container"
+    common_options: "{{ docker_common_options }}"
+    name: "{{ service.container_name }}"
+    image: "{{ service.image }}"
+    volumes: "{{ service.volumes }}"
+    privileged: "{{ service.privileged | default(True) }}"
+  when:
+    - action != "config"
+    - service.enabled | bool
+    - service.host_in_groups | bool
+    - config_json | changed
+      or corosync_container | changed
+
+

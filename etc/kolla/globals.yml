@@ -107,6 +107,10 @@ kolla_internal_vip_address: "10.10.10.254"
 #kolla_enable_tls_external: "no"
 #kolla_external_fqdn_cert: "{{ node_config_directory }}/certificates/haproxy.pem"
 
+##############
+# Pacemaker
+##############
+enable_pacemaker: "yes"
 
 ##############
 # OpenDaylight

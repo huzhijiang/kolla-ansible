@@ -1,0 +1,25 @@
+totem {
+    version: 2
+    secauth: off
+    cluster_name: {{ pacemaker_cluster_name }}
+    transport: udpu
+}
+
+nodelist {
+    node {
+{% for host in groups['pacemaker'] %}
+        ring{{ loop.index0 }}_addr: {{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}
+        nodeid: {{ loop.index0 + 1 }}
+{% endfor %}
+    }
+}
+
+quorum {
+    provider: corosync_votequorum
+}
+
+logging {
+    to_logfile: yes
+    logfile: /var/log/corosync.log
+    to_syslog: yes
+}
