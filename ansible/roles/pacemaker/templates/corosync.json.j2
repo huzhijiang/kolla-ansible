@@ -1,11 +1,11 @@
 {
-    "command": "/usr/share/corosync/corosync start",
+    "command": "/usr/sbin/corosync -f",
     "config_files": [
         {
             "source": "{{ container_config_directory }}/corosync.conf",
             "dest": "/etc/corosync/corosync.conf",
             "owner": "root",
-            "perm": "0655"
+            "perm": "0600"
         }
     ]
 }
