@@ -113,6 +113,14 @@
         tags: redis,
         when: enable_redis | bool }
 
+- name: Apply role pacemaker
+  gather_facts: false
+  hosts: pacemaker
+  roles:
+    - { role: pacemaker,
+        tags: pacemaker,
+        when: enable_pacemaker | bool }
+
 - name: Apply role haproxy
   gather_facts: false
   hosts:
@@ -325,14 +333,6 @@
     - { role: opendaylight,
         tags: opendaylight,
         when: enable_opendaylight | bool }
-
-- name: Apply role pacemaker
-  gather_facts: false
-  hosts: pacemaker
-  roles:
-    - { role: pacemaker,
-        tags: pacemaker,
-        when: enable_pacemaker | bool }
 
 - name: Apply role openvswitch
   hosts:
