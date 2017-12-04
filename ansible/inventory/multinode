@@ -82,6 +82,9 @@ control
 [haproxy:children]
 network
 
+[pacemaker:children]
+network
+
 [hyperv]
 #hyperv_host
 

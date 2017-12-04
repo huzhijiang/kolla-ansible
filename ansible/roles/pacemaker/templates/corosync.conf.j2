@@ -6,12 +6,12 @@ totem {
 }
 
 nodelist {
-    node {
 {% for host in groups['pacemaker'] %}
-        ring{{ loop.index0 }}_addr: {{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}
+    node {
+        ring0_addr: {{ hostvars[host]['ansible_' + hostvars[host]['api_interface']]['ipv4']['address'] }}
         nodeid: {{ loop.index0 + 1 }}
-{% endfor %}
     }
+{% endfor %}
 }
 
 quorum {
