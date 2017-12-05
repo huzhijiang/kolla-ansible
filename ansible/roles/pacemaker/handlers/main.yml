@@ -41,5 +41,6 @@
     - service.host_in_groups | bool
     - config_json | changed
       or pacemaker_container | changed
+      or corosync_conf | changed
 
 
