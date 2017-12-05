@@ -43,6 +43,7 @@ ovsdpdk_services:
       - "/lib/modules:/lib/modules:ro"
       - "/run:/run:shared"
       - "/dev:/dev:shared"
+      - "/mnt:/mnt:shared"
       - "kolla_logs:/var/log/kolla/"
 
 ####################
