@@ -59,7 +59,7 @@ tunnel_interface_network: "{{ hostvars[inventory_hostname]['ansible_' + dpdk_tun
 tunnel_interface_cidr: "{{dpdk_tunnel_interface_address}}/{{ tunnel_interface_network | ipaddr('prefix') }}"
 ovs_cidr_mappings: "{% if neutron_bridge_name.split(',')|length != 1 %} {neutron_bridge_name.split(',')[0]}:{{ tunnel_interface_cidr }} {% else %} {{ neutron_bridge_name }}:{{ tunnel_interface_cidr }} {% endif %}"
 ovs_mem_channels: 4
-ovs_socket_mem: 1024
+ovs_socket_mem: 1024,1024
 ovs_hugepage_mountpoint: /mnt/huge_1GB
 ovs_dpdk_interface_driver: vfio-pci
 
