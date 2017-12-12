@@ -15,6 +15,7 @@ nova_services:
       - "/lib/modules:/lib/modules:ro"
       - "/run/:/run/:shared"
       - "/dev:/dev"
+      - "/mnt:/mnt:shared"
       - "/sys/fs/cgroup:/sys/fs/cgroup"
       - "kolla_logs:/var/log/kolla/"
       - "libvirtd:/var/lib/libvirt"
