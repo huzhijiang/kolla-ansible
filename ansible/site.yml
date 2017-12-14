@@ -113,14 +113,6 @@
         tags: redis,
         when: enable_redis | bool }
 
-- name: Apply role pacemaker
-  gather_facts: false
-  hosts: pacemaker
-  roles:
-    - { role: pacemaker,
-        tags: pacemaker,
-        when: enable_pacemaker | bool }
-
 - name: Apply role haproxy
   gather_facts: false
   hosts:
@@ -129,6 +121,14 @@
     - { role: haproxy,
         tags: haproxy,
         when: enable_haproxy | bool }
+
+- name: Apply role pacemaker
+  gather_facts: false
+  hosts: pacemaker
+  roles:
+    - { role: pacemaker,
+        tags: pacemaker,
+        when: enable_pacemaker | bool }
 
 - name: Apply role kibana
   gather_facts: false
