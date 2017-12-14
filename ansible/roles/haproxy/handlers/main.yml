@@ -57,6 +57,11 @@
       or haproxy_pem.changed | bool
 
 - name: Waiting for virtual IP to appear
+  vars:
+    service_name: "keepalived"
+    service: "{{ haproxy_services[service_name] }}"
   wait_for:
     host: "{{ kolla_internal_vip_address }}"
     port: "{{ database_port }}"
+  when:
+    - service.enabled | bool

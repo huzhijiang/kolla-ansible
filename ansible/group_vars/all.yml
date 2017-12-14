@@ -317,6 +317,7 @@ openstack_auth:
 # could disable some of these required roles and run their own services.
 enable_glance: "yes"
 enable_pacemaker: "no"
+enable_keepalived: "{{ 'no' if enable_pacemaker | bool else 'yes' }}"
 enable_haproxy: "yes"
 enable_keystone: "yes"
 enable_mariadb: "yes"
