@@ -42,5 +42,42 @@
     - config_json | changed
       or pacemaker_container | changed
       or corosync_conf | changed
+  notify:
+    - Ensuring STONITH is off
+    - Ensuring VIP resource are properly setup
+    - Ensuring haproxy resource monitor are properly setup
+    - Ensuring resource constraint are properly setup
+    - Waiting for virtual IP to appear
 
+- name: Ensuring STONITH is off
+  vars:
+    service_name: "pacemaker"
+    service: "{{ pacemaker_services[service_name] }}"
+  command: "docker exec {{ service.container_name }} pcs property set stonith-enabled=false"
+  run_once: True
 
+- name: Ensuring VIP resource are properly setup
+  vars:
+    service_name: "pacemaker"
+    service: "{{ pacemaker_services[service_name] }}"
+  command: "docker exec {{ service.container_name }} pcs resource create VirtualIP ocf:heartbeat:IPaddr2 ip={{ kolla_internal_vip_address }} cidr_netmask=32 op monitor interval=30s"
+  run_once: True
+
+- name: Ensuring haproxy resource monitor are properly setup
+  vars:
+    service_name: "pacemaker"
+    service: "{{ pacemaker_services[service_name] }}"
+  command: "docker exec {{ service.container_name }} pcs resource create CheckAlive ocf:heartbeat:anything binfile=/dummy_service.sh monitor_hook=/check_alive.sh clone"
+  run_once: True
+
+- name: Ensuring resource constraint are properly setup
+  vars:
+    service_name: "pacemaker"
+    service: "{{ pacemaker_services[service_name] }}"
+  command: "docker exec {{ service.container_name }} pcs constraint location VirtualIP rule score=-INFINITY not_defined haproxy_health or haproxy_health eq string 0"
+  run_once: True
+
+- name: Waiting for virtual IP to appear
+  wait_for:
+    host: "{{ kolla_internal_vip_address }}"
+    port: "{{ database_port }}"

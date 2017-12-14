@@ -30,6 +30,7 @@ pacemaker_services:
       - "/run:/run:shared"
       - "/dev/shm:/dev/shm"
       - "kolla_logs:/var/log/kolla/"
+      - "haproxy_socket:/var/lib/kolla/haproxy/"
 
 ####################
 # configs
