@@ -313,6 +313,10 @@ openstack_auth:
     project_name: "admin"
     domain_name: "default"
 
+# Endpoint type used to connect with OpenStack services with ansible modules.
+# Valid options are [ public, internal, admin ]
+openstack_interface: "admin"
+
 # These roles are required for Kolla to be operation, however a savvy deployer
 # could disable some of these required roles and run their own services.
 enable_glance: "yes"
@@ -354,6 +358,7 @@ enable_heat: "yes"
 enable_horizon: "yes"
 enable_horizon_cloudkitty: "{{ enable_cloudkitty | bool }}"
 enable_horizon_designate: "{{ enable_designate | bool }}"
+enable_horizon_fwaas: "{{ enable_neutron_fwaas | bool }}"
 enable_horizon_freezer: "{{ enable_freezer | bool }}"
 enable_horizon_ironic: "{{ enable_ironic | bool }}"
 enable_horizon_karbor: "{{ enable_karbor | bool }}"
