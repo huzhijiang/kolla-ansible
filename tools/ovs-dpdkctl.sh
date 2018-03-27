@@ -72,6 +72,10 @@ function gen_port_mappings {
     echo "$OVS_DPDK_PORT_MAPPINGS"
 }
 
+function get_default_ip_mode {
+    [[ $(is_redhat_family) == 0 ]] && echo "systemd" || echo "native"
+}
+
 function gen_config {
     del_config
     touch $CONFIG_FILE
@@ -85,6 +89,7 @@ function gen_config {
     set_value ovs dpdk_interface_driver ${dpdk_interface_driver:-"uio_pci_generic"}
     set_value ovs hugepage_mountpoint ${hugepage_mountpoint:-"/dev/hugepages"}
     set_value ovs physical_port_policy ${ovs_physical_port_policy:-"named"}
+    set_value ovs ip_assignment_mode ${ip_assignment_mode:-$(get_default_ip_mode)}
 
     ls -al /sys/class/net/* | awk '$0 ~ /pci/ {n=split($NF,a,"/"); print "\n[" a[n] "]\naddress = " a[n-2]  "\ndriver ="}' >> $CONFIG_FILE
 
@@ -94,7 +99,7 @@ function gen_config {
     for nic in $(list_dpdk_nics); do
         set_value $nic driver ${dpdk_interface_driver:-"uio_pci_generic"}
     done
-    set_value ovs pci_whitelist "'${pci_whitelist:-$(generate_pciwhitelist)}'"
+    set_value ovs pci_whitelist "${pci_whitelist:-$(generate_pciwhitelist)}"
 
 }
 
@@ -238,7 +243,8 @@ function install_network_manager_conf {
         fi
         [[ "$octet" < 3 ]] && mask+=.
     done
-    if  [[ is_redhat_family == 0 ]]; then
+
+    if  [[ $(is_redhat_family) == 0 ]]; then
         cat << EOF | tee "/etc/sysconfig/network-scripts/ifcfg-$bridge"
 DEVICE=$bridge
 BOOTPROTO=static
@@ -247,7 +253,6 @@ NETMASK=$mask
 HOTPLUG=yes
 ONBOOT=yes
 EOF
-install_redhat_bridge_service $bridge
     else
         cat << EOF | tee "/etc/network/interfaces.d/$bridge.cfg"
     auto $bridge
@@ -255,14 +260,18 @@ install_redhat_bridge_service $bridge
         address $ip
         netmask $mask
 EOF
+    fi
 
+    ip_mode="$(get_value ovs ip_assignment_mode)"
+    if [[ $ip_mode == "systemd" ]]; then
+        install_tunnel_bridge_service $bridge
     fi
 }
 
 function uninstall_network_manager_conf {
     pair=$(get_value ovs cidr_mappings)
     bridge=`echo $pair | cut -f 1 -d ":"`
-    if  [[ is_redhat_family == 0 ]]; then
+    if  [[ $(is_redhat_family) == 0 ]]; then
         rm -f /etc/sysconfig/network-scripts/ifcfg-$bridge
     else
         rm -f /etc/network/interfaces.d/$bridge.cfg
@@ -294,7 +303,7 @@ EOF
     systemctl enable ovs-dpdkctl
 }
 
-function install_redhat_bridge_service {
+function install_tunnel_bridge_service {
     cat << EOF | tee "$BRIDGE_SERVICE_FILE"
 [Unit]
 Description=configuration service for ovs-dpdk bridge.
@@ -332,7 +341,7 @@ function uninstall_service {
 function configure_kernel_modules {
     driver="$(get_value ovs dpdk_interface_driver)"
     lsmod | grep -ws $driver > /dev/null || modprobe $driver
-    if  [[ is_redhat_family == 0 ]]; then
+    if  [[ $(is_redhat_family) == 0 ]]; then
         [[ ! -e /etc/modules-load.d/${driver}.conf ]] && echo $driver | tee /etc/modules-load.d/${driver}.conf
     else
         grep -ws $driver /etc/modules > /dev/null || echo $driver | tee -a /etc/modules
@@ -342,7 +351,7 @@ function configure_kernel_modules {
 function unconfigure_kernel_modules {
     driver="$(get_value ovs dpdk_interface_driver)"
     lsmod | grep -ws $driver > /dev/null && rmmod $driver
-    if [[ is_redhat_family == 0 ]] ; then
+    if [[ $(is_redhat_family) == 0 ]] ; then
         [[ -e /etc/modules-load.d/${driver}.conf ]] && rm -f /etc/modules-load.d/${driver}.conf
     else
         grep  -ws $driver /etc/modules > /dev/null && sed -e "s/$driver//" -i /etc/modules
@@ -350,7 +359,6 @@ function unconfigure_kernel_modules {
 }
 
 function install {
-    configure_kernel_modules
     if [ ! -e "$SERVICE_FILE" ]; then
         install_service
     fi
@@ -361,14 +369,18 @@ function install {
     if [ ! -e "$CONFIG_FILE" ]; then
         gen_config
     fi
+    configure_kernel_modules
     systemctl start ovs-dpdkctl
     install_network_manager_conf
-    if  [[ is_redhat_family == 0 ]]; then
+
+    ip_mode="$(get_value ovs ip_assignment_mode)"
+    if  [[ $ip_mode == "systemd" ]]; then
         systemctl start ovs-dpdk-bridge
     fi
 }
 
 function uninstall {
+    systemctl stop ovs-dpdk-bridge
     systemctl stop ovs-dpdkctl
     if [ -e "$SERVICE_FILE" ]; then
         uninstall_service

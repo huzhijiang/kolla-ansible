@@ -2,3 +2,8 @@ stdio_handler = "file"
 
 user = "nova"
 group = "nova"
+
+{% if enable_ovs_dpdk | bool %}
+# huzhj: help libvirtd to find our hugepages easily
+hugetlbfs_mount = ["/mnt/huge_1GB"]
+{% endif %}

@@ -116,7 +116,7 @@ docker_common_options:
 ####################
 # Arbitrary unique number from 0..255
 keepalived_virtual_router_id: "51"
-
+keepalived_interface: "{{ network_interface }}"
 
 #######################
 # Elasticsearch Options
@@ -317,6 +317,7 @@ opendaylight_tomcat_redirect_port: "8663"
 opendaylight_karaf_ssh_port: "8101"
 opendaylight_openflow_port: "6653"
 opendaylight_ovsdb_port: "6641"
+opendaylight_websocket_port: "8185"
 
 vitrage_api_port: "8999"
 
@@ -716,10 +717,10 @@ vmware_vcenter_insecure: "True"
 ######################
 # OpenDaylight
 ######################
-opendaylight_release: "0.6.2-Carbon"
+opendaylight_release: "0.6.3-SNAPSHOT"
 opendaylight_mechanism_driver: "opendaylight_v2"
 opendaylight_l3_service_plugin: "odl-router_v2"
-opendaylight_acl_impl: "learn"
+opendaylight_acl_impl: "stateful"
 enable_opendaylight_qos: "no"
 enable_opendaylight_l3: "{{ enable_opendaylight }}"
 enable_opendaylight_legacy_netvirt_conntrack: "no"
