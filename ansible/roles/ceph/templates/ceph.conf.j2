@@ -12,6 +12,8 @@ mon host = {% for host in groups['ceph-mon'] %}{{ hostvars[host]['ansible_' + ho
 
 mon addr = {% for host in groups['ceph-mon'] %}{{ hostvars[host]['ansible_' + hostvars[host]['storage_interface']]['ipv4']['address'] }}:6789{% if not loop.last %}, {% endif %}{% endfor %}
 
+mon max pg per osd = 300
+
 auth cluster required = cephx
 auth service required = cephx
 auth client required = cephx

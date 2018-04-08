@@ -703,8 +703,8 @@ ceph_rule: "default host {{ 'indep' if ceph_pool_type == 'erasure' else 'firstn'
 ceph_cache_rule: "cache host firstn"
 
 # Set the pgs and pgps for pool
-ceph_pool_pg_num: 64
-ceph_pool_pgp_num: 64
+ceph_pool_pg_num: 32
+ceph_pool_pgp_num: 32
 
 #####################
 # VMware support
