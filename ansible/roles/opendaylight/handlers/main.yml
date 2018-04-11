@@ -22,6 +22,7 @@
       or opendaylight_config_ovsdb | changed
       or opendaylight_config_tomcat | changed
       or opendaylight_config_logging | changed
+      or opendaylight_config_pax_web | changed
       or opendaylight_config_netvirt | changed
       or opendaylight_config_netvirt_acl | changed
       or opendaylight_config_env | changed

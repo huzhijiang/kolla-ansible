@@ -94,6 +94,16 @@
   notify:
     - Restart opendaylight container
 
+- name: Copying over org.ops4j.pax.web.cfg.j2
+  template:
+    src: "{{ role_path }}/templates/org.ops4j.pax.web.cfg.j2"
+    dest: "{{ node_config_directory }}/{{ item }}/org.ops4j.pax.web.cfg"
+  register: opendaylight_config_pax_web
+  with_items:
+    - "opendaylight"
+  notify:
+    - Restart opendaylight container
+
 - name: Copying over netvirt-impl-config_netvirt-impl-config.xml
   template:
     src: "{{ role_path }}/templates/netvirt-impl-config_netvirt-impl-config.xml.j2"

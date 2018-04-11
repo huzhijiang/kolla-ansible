@@ -38,6 +38,12 @@
             "perm": "0600"
         },
         {
+            "source": "{{ container_config_directory }}/org.ops4j.pax.web.cfg",
+            "dest": "/opt/opendaylight/etc/org.ops4j.pax.web.cfg",
+            "owner": "odl",
+            "perm": "0600"
+        },
+        {
             "source": "/var/lib/kolla/config_files/custom.properties",
             "dest": "/opt/opendaylight/etc/custom.properties",
             "owner": "odl",
